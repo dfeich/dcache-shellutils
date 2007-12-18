@@ -55,8 +55,8 @@ while true; do
     esac
 done
 
-if test ! -r $DCACHEUTILS/dc_utils_lib.sh; then
-    echo "ERROR: Env Var DCACHEUTILS must point to directory containing dc_utils_lib.sh" >&2
+if test ! -r $DCACHE_SHELLUTILS/dc_utils_lib.sh; then
+    echo "ERROR: Env Var DCACHE_SHELLUTILS must point to directory containing dc_utils_lib.sh" >&2
     exit
 fi
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
@@ -97,6 +97,7 @@ fi
 option=" -l=$lopt"
 if test x"$idlist" = x; then
    cat > $cmdfile <<EOF
+set timeout 120
 cd $poolname
 rep ls$option
 ..
