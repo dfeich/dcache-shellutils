@@ -35,9 +35,11 @@ check_poolname() {
 	echo "Error: Could not create a tmpfile" >&2
 	exit 1
     fi
+    # note: need to use -l which produces longer output, because dcache breaks off the connection uncleanly
+    # and short outputs are sometimes lost
     ssh -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>${tmpfile}.err > $tmpfile <<EOF
 cd PoolManager
-psu ls pool
+psu ls pool -l
 ..
 logoff
 EOF
@@ -47,7 +49,8 @@ EOF
     #   rm -f ${tmpfile}.err # $tmpfile
        #exit 1
     #fi
-    sed -i -ne 's/\cM\(se.*\).*/\1/p' $tmpfile
+    #sed -i -ne 's/\cM\(se.*\).*/\1/p' $tmpfile
+    sed -nie 's/^\([^ ]*\).*enabled.*/\1/p'  $tmpfile
     grep $poolname $tmpfile &>/dev/null;
     status=$?
     rm -f ${tmpfile}.err $tmpfile

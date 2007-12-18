@@ -1,6 +1,19 @@
 #!/bin/bash
 
-if test x"$1" = x-l -o x"$1" = x-a; then
+usage(){
+    cat <<EOF
+Synopsis:
+          dc_get_pool_list [-l]
+
+Description:
+          lists all pools
+
+          -l      : displays raw,long output
+          -d      : debug
+EOF
+}
+
+if test x"$1" = x-l ; then
     opt=" $1"
     shift
 fi
@@ -20,7 +33,7 @@ fi
 
 cat > $cmdfile <<EOF
 cd PoolManager
-psu ls pool$opt
+psu ls pool -l
 ..
 logoff
 EOF
@@ -37,7 +50,8 @@ rm -f $cmdfile
 
 
 if test x"$opt" = x; then
-   sed -i -e '/(.*)/d' -e '/^ *$/d' $retfile
+   #sed -i -e '/(.*)/d' -e '/^ *$/d' $retfile
+   sed -nie 's/^\([^ ]*\).*enabled.*/\1/p' $retfile
 fi
 
 cat $retfile
