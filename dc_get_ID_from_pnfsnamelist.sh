@@ -7,6 +7,7 @@ Synopsis:
 Description:
           The listfile must contain a list of pnfs filenames for which
           pnfsIDs will be produced
+          If listfile is omitted, the input will be read from stdin
 EOF
 }
 
@@ -16,10 +17,13 @@ listfile=$1
 
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
+toremove=""
 if test x"$listfile" = x; then
-    usage
-    echo "Error: no listfile  given" >&2
-    exit 1
+   listfile=`mktemp /tmp/get_pnfsname-$USER.XXXXXXXX`
+   while read line; do
+      echo "$line" >> $listfile
+   done
+   toremove="$toremove $listfile"
 fi
 if test ! -r $listfile; then
     echo "Error: Cannot read list file: $listfile" >&2
@@ -29,6 +33,7 @@ fi
 cmdfile=`mktemp /tmp/get_pnfsname-$USER.XXXXXXXX`
 if test $? -ne 0; then
     echo "Error: Could not create a cmdfile" >&2
+    rm -f $toremove
     exit 1
 fi
 
@@ -38,12 +43,13 @@ for n in `cat $listfile`;do
 done
 echo ".." >>$cmdfile
 echo "logoff" >>$cmdfile
+toremove="$toremove $cmdfile"
 
 execute_cmdfile -f $cmdfile resfile
-rm -f $cmdfile
 
 sed -i -ne '/^0[0-9A-Z]*\|pnfsidof/p' $resfile
 sed -i -e 's/.*pnfsidof *\(\/pnfs\/[^ ]*\)/\1/' $resfile
+toremove="$toremove $resfile"
 
 # collect id and pnfs filename pairs
 state=pnfs
@@ -62,6 +68,7 @@ do
       state=pnfs
   else
       echo "ERROR:state=$state   line=$line" >&2
+      rm -f $toremove
       exit
   fi
 done < $resfile
@@ -70,4 +77,4 @@ if test $state = id; then
     echo "Error:Missing $name"
 fi
 
-rm -f $resfile
+rm -f $toremove
