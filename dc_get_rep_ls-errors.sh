@@ -1,5 +1,19 @@
 #!/bin/bash
 
+usage() {
+    cat <<EOF
+Synopsis:
+          dc_get_rep_ls-errors.sh [-r] poolname
+Description:
+          returns an ID list of files with error states
+          The -r option will return the raw output.
+EOF
+}
+
+if test x"$1" = x-h; then
+    usage
+    exit 0
+fi
 if test x"$1" = x-r; then
     raw=1
     shift

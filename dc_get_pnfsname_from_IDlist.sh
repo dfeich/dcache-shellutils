@@ -15,6 +15,10 @@ listfile=$1
 
 
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
+if test x"$1" = x-h; then
+   usage
+   exit 0
+fi
 
 toremove=""
 if test x"$listfile" = x; then
@@ -43,8 +47,8 @@ done
 echo ".." >>$cmdfile
 echo "logoff" >>$cmdfile
 
-execute_cmdfile -f $cmdfile resfile
 toremove="$toremove $cmdfile"
+execute_cmdfile -f $cmdfile resfile
 
 sed -i -ne '/\/pnfs\/\|pathfinder 0/p' $resfile
 sed -i -e 's/.*pathfinder *\(0[0-9A-Z]*\)/\1/' $resfile
