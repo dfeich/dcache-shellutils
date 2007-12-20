@@ -1,4 +1,11 @@
 #!/bin/bash
+#################################################################
+# dc_get_poollist.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch>
+#
+# $Id:$
+#################################################################
 
 usage(){
     cat <<EOF

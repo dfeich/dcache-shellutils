@@ -1,10 +1,21 @@
 #!/bin/bash
+#################################################################
+# dc_poolconsistency_checker.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2007-12-20
+#
+# $Id:$
+#################################################################
 
 dbg=1
 
 usage() {
     cat <<EOF
-Synopsis:
+Synopsis: dc_poolconsistency_checker.sh poolname
+
+Description:
+          This tool will check a pool for files with error states and
+          will locate files with missing pnfs entries
 EOF
 }
 
