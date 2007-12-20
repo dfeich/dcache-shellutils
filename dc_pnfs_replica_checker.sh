@@ -13,6 +13,7 @@ DATE=`date +%Y%m%d-%H%M`
 ########## DEFAULTS #################
 dbg=1
 resdir=ns_consistency-${DATE}
+bunchsize=1000
 #####################################
 
 usage() {
@@ -28,8 +29,76 @@ Options:
 EOF
 }
 
+pnfsCachereport() {
+local pnfslist=$1
 
-TEMP=`getopt -o hr: --long help -n 'dc_pnfs_replica_checker.sh' -- "$@"`
+if test x"$pnfslist" = x; then
+   echo "Error: pnfsCachereport called with no listfile given"
+   exit 1
+fi
+if test ! -r "$pnfslist"; then
+   echo "Error: Cannot read listfile $pnfslist"
+   exit 1
+fi
+ 
+local IDpnfslist=${pnfslist%.lst}_IDpnfs.lst
+local noIDlist=${pnfslist%.lst}_noID_pnfs.lst
+local IDlist=${pnfslist%.lst}_ID.lst
+local cachelist=${pnfslist%.lst}_cacheinfo.lst
+local norepllist=${pnfslist%.lst}_noreplicate_ID.lst
+local noreplpnfslist=${pnfslist%.lst}_noreplicate_pnfs.lst
+
+local numfiles=`wc -l $pnfslist|awk '{print $1}'`
+echo -n "mapping to IDs... "
+starttimer
+dc_get_ID_from_pnfsnamelist.sh $pnfslist > $IDpnfslist
+if test $? -ne 0; then
+   echo "failed"
+   exit 1
+fi
+t=`gettimer`
+echo "OK  ($numfiles files took $t seconds)"
+
+grep "Error:Missing" $IDpnfslist > $noIDlist
+num_noID=`wc -l $noIDlist|awk '{print $1}'`
+if test $num_noID -gt 0; then
+   echo "WARNING: $num_noID entries lack a corresponding ID!"
+fi
+
+grep -v "Error:Missing" $IDpnfslist| cut -f1 -d' ' > $IDlist
+num_ID=`wc -l $IDlist|awk '{print $1}'`
+
+
+echo -n "getting replica information (cacheinfo)... "
+dc_get_cacheinfo_from_IDlist.sh $IDlist > $cachelist
+if test $? -ne 0; then
+   echo "failed"
+   exit 1
+fi
+t=`gettimer`
+echo "OK  ($num_ID entries took $t seconds)"
+
+
+rm -f $norepllist
+while read id cache; do
+   if test x"$cache" = x
+      then echo $id >> $norepllist
+   fi
+done < $cachelist
+
+rm -f  $noreplpnfslist
+num_norepl=`wc -l $norepllist|awk '{print $1}'`
+if test $num_norepl -gt 0; then
+   echo "WARNING: $num_norepl entries lack a replicate!"
+
+   for id in `cat $norepllist`; do
+      grep $id $IDpnfslist >>  $noreplpnfslist
+   done
+fi
+
+}
+
+TEMP=`getopt -o b:hl:r: --long help -n 'dc_pnfs_replica_checker.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -39,6 +108,14 @@ while true; do
         --help|-h)
             usage
             exit
+            ;;
+        -b)
+            bunchsize="$2"
+            shift 2
+            ;;
+        -l)
+            pnfs_srclist="$2"
+            shift 2
             ;;
         -r)
 	    resdir="$2"
@@ -58,6 +135,26 @@ done
 
 pnfs_basepath=$1
 
+mkdir $resdir
+if test $? -ne 0; then
+   echo "failed to create results directory $resdir" >&2
+   exit 1
+fi
+cwd=`pwd`
+cd $resdir
+resdir=`pwd`
+cd $cwd
+
+##### result file definitions
+pnfslist=$resdir/pnfs.lst
+IDpnfslist=$resdir/IDpnfs.lst
+noIDlist=$resdir/noID_pnfs.lst
+IDlist=$resdir/ID.lst
+cachelist=$resdir/cacheinfo.lst
+norepllist=$resdir/noreplicate_ID.lst
+noreplpnfslist=$resdir/noreplicate_pnfs.lst
+workdir=$resdir/work
+#####
 
 if test ! -r $DCACHE_SHELLUTILS/dc_utils_lib.sh; then
     echo "ERROR: Env Var DCACHE_SHELLUTILS must point to directory containing dc_utils_lib.sh" >&2
@@ -65,88 +162,65 @@ if test ! -r $DCACHE_SHELLUTILS/dc_utils_lib.sh; then
 fi
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
-if test x"$pnfs_basepath" = x; then
-   usage
-   echo "Error: No basepath specified" >&2
-   exit 1
-fi
-
-if test ! -d $pnfs_basepath; then
-   echo "Error: No such directory: $pnfs_basepath"
-fi
-
-mkdir $resdir
-if test $? -ne 0; then
-   echo "failed to create results directory $resdir" >&2
-   exit 1
-fi
-
 echo "All results will be written to directory $resdir"
 
-echo $pnfs_basepath > $resdir/basepath
+if test x"$pnfs_srclist" = x; then
+   if test x"$pnfs_basepath" = x; then
+      usage
+      echo "Error: No basepath specified" >&2
+      exit 1
+   fi
 
-echo -n "Finding the files under $pnfs_basepath..."
-pnfslist=$resdir/pnfs.lst
-starttimer
-find $pnfs_basepath -type f > $pnfslist
-if test $? -ne 0; then
-   echo "failed"
-   exit 1
+   if test ! -d $pnfs_basepath; then
+      echo "Error: No such directory: $pnfs_basepath"
+   fi
+   echo $pnfs_basepath > $resdir/basepath
+
+   echo -n "Finding the files under $pnfs_basepath..."
+   starttimer
+   find $pnfs_basepath -type f > $pnfslist
+   if test $? -ne 0; then
+      echo "failed"
+      exit 1
+   fi
+   t=`gettimer`
+   numfiles=`wc -l $pnfslist|awk '{print $1}'`
+   echo "OK  ($numfiles files took $t seconds)"
+else
+   cp $pnfs_srclist $pnfslist
+   numfiles=`wc -l $pnfslist|awk '{print $1}'`
+   echo "src list file contains $pnfs_srclist $numfiles entries"
 fi
-t=`gettimer`
-numfiles=`wc -l $pnfslist|awk '{print $1}'`
-echo "OK  ($numfiles files took $t seconds)"
 
+mkdir $workdir
+cd $workdir
+split -l $bunchsize $pnfslist part_pnfslist_
 
-echo -n "mapping to IDs... "
-IDpnfslist=$resdir/IDpnfs.lst
-starttimer
-dc_get_ID_from_pnfsnamelist.sh $pnfslist > $IDpnfslist
-if test $? -ne 0; then
-   echo "failed"
-   exit 1
-fi
-t=`gettimer`
-echo "OK  ($numfiles files took $t seconds)"
+for lst in `ls part_pnfslist_*`;do
+   echo "#######################################"
+   echo "processing ${lst}..."
+   pnfsCachereport $lst
+done
 
-noIDlist=$resdir/noID_pnfs.lst
-grep "Error:Missing" $IDpnfslist > $noIDlist
+# merging of result files
+echo "#############################################################"
+echo -n "Merging the results...."
+cat $workdir/*_ID.lst > $IDlist
+cat $workdir/*_IDpnfs.lst > $IDpnfslist
+cat $workdir/*_cacheinfo.lst > $cachelist
+cat $workdir/*_noID_pnfs.lst > $noIDlist
+cat $workdir/*_noreplicate_ID.lst > $norepllist
+cat $workdir/*_noreplicate_pnfs.lst > $noreplpnfslist
+echo "OK  (processed a total of $numfiles entries"
+
 num_noID=`wc -l $noIDlist|awk '{print $1}'`
 if test $num_noID -gt 0; then
    echo "WARNING: $num_noID entries lack a corresponding ID!"
 fi
-
-IDlist=$resdir/ID.lst
-grep -v "Error:Missing" $IDpnfslist| cut -f1 -d' ' > $IDlist
-num_ID=`wc -l $IDlist|awk '{print $1}'`
-
-
-cachelist=$resdir/cacheinfo.lst
-echo -n "getting replica information (cacheinfo)... "
-dc_get_cacheinfo_from_IDlist.sh $IDlist > $cachelist
-if test $? -ne 0; then
-   echo "failed"
-   exit 1
-fi
-t=`gettimer`
-echo "OK  ($num_ID entries took $t seconds)"
-
-
-norepllist=$resdir/noreplicate_ID.lst
-rm -f $norepllist
-while read id cache; do
-   if test x"$cache" = x
-      then echo $id >> $norepllist
-   fi
-done < $cachelist
-
-noreplpnfslist=$resdir/noreplicate_pnfs.lst
-rm -f  $noreplpnfslist
 num_norepl=`wc -l $norepllist|awk '{print $1}'`
 if test $num_norepl -gt 0; then
    echo "WARNING: $num_norepl entries lack a replicate!"
-
-   for id in `cat $norepllist`; do
-      grep $id $IDpnfslist >>  $noreplpnfslist
-   done
 fi
+
+exit 0
+
