@@ -115,3 +115,19 @@ execute_cmdfile() {
     eval $fileref=$tmpfile
     return 0
 }
+
+
+# two functions to start a timer and to get the number of passed seconds
+starttimer() {
+  timerstart=`date +%s`
+}
+gettimer() {
+  if test x"$timerstart" = x; then
+     echo "Error: gettimer called without previous starttimer" >&2
+     echo 0
+     return 1
+  fi
+  local t2=`date +%s`
+  echo $((t2-timerstart))
+  return 0
+}
