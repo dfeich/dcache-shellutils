@@ -5,7 +5,7 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2007-12-20
 #
-# $Id:$
+# $Id$
 #################################################################
 
 DATE=`date +%Y%m%d-%H%M`
@@ -26,6 +26,8 @@ Description:
           no replicates. All results will be written to a results directory 
 Options:
           -r directory       : specifies the results directory name [$resdir]
+          -l filenama        : specify a list of pnfs names instead of using a base pnfs path
+          -b integer         : process the list in bunches of this size [$bunchsize]          
 EOF
 }
 
@@ -87,8 +89,9 @@ while read id cache; do
 done < $cachelist
 
 rm -f  $noreplpnfslist
-num_norepl=`wc -l $norepllist|awk '{print $1}'`
-if test $num_norepl -gt 0; then
+
+if -r "$norepllist"; then
+   num_norepl=`wc -l $norepllist|awk '{print $1}'`
    echo "WARNING: $num_norepl entries lack a replicate!"
 
    for id in `cat $norepllist`; do
