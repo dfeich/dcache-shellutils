@@ -22,8 +22,11 @@ Synopsis: dc_pnfs_replica_checker.sh [options] pnfs-path
 
 Description:
           This tool will collect information on all regular files below the given
-          pnfs path. It will locate pnfs entries with no IDs and also entries with
-          no replicates. All results will be written to a results directory 
+          pnfs path or of a given list file. It will locate pnfs entries with no
+          IDs and also entries with no replicates. All results will be written to
+          a results directory.
+          Note that you will have to have pnfs mounted, if you want to use the
+          invocation with the pnfs-path specified.
 Options:
           -r directory       : specifies the results directory name [$resdir]
           -l filenama        : specify a list of pnfs names instead of using a base pnfs path
@@ -90,7 +93,7 @@ done < $cachelist
 
 rm -f  $noreplpnfslist
 
-if -r "$norepllist"; then
+if test -r "$norepllist"; then
    num_norepl=`wc -l $norepllist|awk '{print $1}'`
    echo "WARNING: $num_norepl entries lack a replicate!"
 
@@ -198,10 +201,13 @@ fi
 mkdir $workdir
 cd $workdir
 split -l $bunchsize $pnfslist part_pnfslist_
+num_parts=`ls part_pnfslist_*|wc -l |awk '{print $1}'`
 
+counter=0
 for lst in `ls part_pnfslist_*`;do
+   counter=$((counter + 1))
    echo "#######################################"
-   echo "processing ${lst}..."
+   echo "processing ${lst} ($counter/$num_parts)..."
    pnfsCachereport $lst
 done
 
