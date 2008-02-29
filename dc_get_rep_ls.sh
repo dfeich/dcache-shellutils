@@ -15,12 +15,12 @@ usage(){
     cat <<EOF
 Synopsis:
           get_rep_ls.sh [option] poolname
-          get_rep_ls.sh [-r] poolname listfile
 Description:
-          lists files in a pool. If listfile is given, only the files whose pnfsIDs are
-          found in the listfile will be returned.
+          lists files in a pool.
 
           -r      : displays raw output
+          -f file : only displays files found in the pnfsID list contained in the file
+                    if this option is given as -f- then will expect list on stdin
           -l str  : adds a format option -l=str to the admin shell's "rep ls"-command:     
                          s  : sticky files
                          p  : precious files
@@ -34,7 +34,7 @@ Description:
 EOF
 }
 
-TEMP=`getopt -o chl:r --long help -n 'get_rep_ls.sh' -- "$@"`
+TEMP=`getopt -o chf:l:r --long help -n 'get_rep_ls.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -48,6 +48,10 @@ while true; do
         -c)
             cachedonly=1
             shift
+            ;;
+        -f)
+            listfile=$2
+            shift 2
             ;;
         -r)
 	    raw=1
@@ -83,6 +87,15 @@ source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
 
 poolname=$1
+
+if test x"$listfile" = "x-"; then
+   listfile=`mktemp /tmp/get_pnfsname-$USER.XXXXXXXX`
+   while read line; do
+      echo "$line" >> $listfile
+   done
+   toremove="$toremove $listfile"
+fi
+
 if test x"$2" != x; then
    if test ! -r "$2"; then
       echo "Error: Cannot read ID list: $2"
@@ -92,7 +105,7 @@ if test x"$2" != x; then
        echo "Error: cannot use -l flag together with an ID list file"
        exit 1
    fi
-   idlist=$2
+   listfile=$2
 fi
 
 if test x"$poolname" = x; then
@@ -116,7 +129,7 @@ fi
 toremove="$toremove $cmdfile"
 
 option=" -l=$lopt"
-if test x"$idlist" = x; then
+if test x"$listfile" = x; then
    cat > $cmdfile <<EOF
 set timeout 120
 cd $poolname
@@ -126,7 +139,7 @@ logoff
 EOF
 else
    echo "cd $poolname" >> $cmdfile
-   for n in `cat $idlist`; do
+   for n in `cat $listfile`; do
       echo "rep ls $n" >> $cmdfile
    done
    echo ".." >> $cmdfile
