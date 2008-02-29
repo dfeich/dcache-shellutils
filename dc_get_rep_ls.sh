@@ -4,11 +4,12 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2007-08-27
 #
-# $Id:$
+# $Id$
 #################################################################
 
 lopt=""
 raw=""
+cachedonly=0
 
 usage(){
     cat <<EOF
@@ -20,11 +21,20 @@ Description:
           found in the listfile will be returned.
 
           -r      : displays raw output
-          -l str  : adds a format option -l=str to the "rep ls"-command    : 
+          -l str  : adds a format option -l=str to the admin shell's "rep ls"-command:     
+                         s  : sticky files
+                         p  : precious files
+                         l  : locked files
+                         u  : files in use
+                         nc : files which are not cached
+                         e  : files which error condition
+
+          -c      : lists cached files only (own implementation)
+
 EOF
 }
 
-TEMP=`getopt -o hl:r --long help -n 'get_rep_ls.sh' -- "$@"`
+TEMP=`getopt -o chl:r --long help -n 'get_rep_ls.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -34,6 +44,10 @@ while true; do
         --help|-h)
             usage
             exit
+            ;;
+        -c)
+            cachedonly=1
+            shift
             ;;
         -r)
 	    raw=1
@@ -54,6 +68,12 @@ while true; do
             ;;
     esac
 done
+
+if test x"$lopt" != x -a  $cachedonly -ne 0; then
+    usage
+    echo "ERROR: Cannot specify both -c and -l options" >&2
+    exit 1
+fi
 
 if test ! -r $DCACHE_SHELLUTILS/dc_utils_lib.sh; then
     echo "ERROR: Env Var DCACHE_SHELLUTILS must point to directory containing dc_utils_lib.sh" >&2
@@ -86,13 +106,14 @@ if test $? -ne 0; then
     exit 1
 fi
 
+toremove=""
 
-#outfile=reperrors-$poolname-`date +%Y%m%d`.lst
 cmdfile=`mktemp /tmp/get_pnfsname-$USER.XXXXXXXX`
 if test $? -ne 0; then
     echo "Error: Could not create a cmdfile" >&2
     exit 1
 fi
+toremove="$toremove $cmdfile"
 
 option=" -l=$lopt"
 if test x"$idlist" = x; then
@@ -112,12 +133,19 @@ else
    echo "logoff" >> $cmdfile
 fi
 
-execute_cmdfile -f $cmdfile retfile
-rm -f $cmdfile
+execute_cmdfile -f $cmdfile resfile
+toremove="$toremove $resfile"
 
-if test x"$raw" != x1; then
-    sed -i -ne 's/^\(0[0-9A-Z]*\).*/\1/p' $retfile
+# Warning: I conclude that this is the definition of a cached file
+#         <C-------X--(0)[0]>
+# I have seen <--C-------L(0)[1]> too, but this file had no phys copy at all
+if test $cachedonly -ne 0; then
+    sed -i -ne '/<C-.*/p' $resfile
 fi
 
-cat $retfile
-rm -f $retfile
+if test x"$raw" != x1; then
+    sed -i -ne 's/^\(0[0-9A-Z]*\).*/\1/p' $resfile
+fi
+
+cat $resfile
+rm -f $toremove
