@@ -5,7 +5,7 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2007-08-27
 #
-# $Id: dc_get_rep_ls.sh 251 2008-02-29 15:14:33Z dfeich $
+# $Id$
 #################################################################
 
 dbg=1
