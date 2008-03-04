@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#################################################################
+# dc_get_storageinfo_from_IDlist.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2008-03-04
+#
+# $Id$
+#################################################################
+
 usage() {
     cat <<EOF
 Synopsis:
