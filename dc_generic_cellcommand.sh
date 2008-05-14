@@ -119,7 +119,6 @@ toremove="$toremove $resfile"
 #   sed -i -e '/(.*)/d' -e '/^ *$/d' $retfile
 #fi
 
-cat $retfile
-rm -f $retfile
+cat $resfile
 
 rm -f $toremove
