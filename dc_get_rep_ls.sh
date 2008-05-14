@@ -14,27 +14,27 @@ cachedonly=0
 usage(){
     cat <<EOF
 Synopsis:
-          get_rep_ls.sh [option] poolname
+          dc_get_rep_ls.sh [option] poolname
 Description:
           lists files in a pool.
 
           -r      : displays raw output
-          -f file : only displays files found in the pnfsID list contained in the file
-                    if this option is given as -f- then will expect list on stdin
+          -i file : only displays files found in the pnfsID list contained in the file
+                    if this option is given as -i- then will expect list on stdin
           -l str  : adds a format option -l=str to the admin shell's "rep ls"-command:     
                          s  : sticky files
                          p  : precious files
                          l  : locked files
                          u  : files in use
                          nc : files which are not cached
-                         e  : files which error condition
+                         e  : files with error condition
 
           -c      : lists cached files only (own implementation)
 
 EOF
 }
 
-TEMP=`getopt -o chf:l:r --long help -n 'get_rep_ls.sh' -- "$@"`
+TEMP=`getopt -o chi:l:r --long help -n 'get_rep_ls.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -49,7 +49,7 @@ while true; do
             cachedonly=1
             shift
             ;;
-        -f)
+        -i)
             listfile=$2
             shift 2
             ;;
@@ -98,6 +98,7 @@ fi
 
 if test x"$2" != x; then
    if test ! -r "$2"; then
+      usage
       echo "Error: Cannot read ID list: $2"
       exit 1
    fi
@@ -109,6 +110,7 @@ if test x"$2" != x; then
 fi
 
 if test x"$poolname" = x; then
+   usage
    echo "Error: you need to provide a pool name" >&2
    exit 1
 fi
