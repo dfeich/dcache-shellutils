@@ -4,7 +4,7 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch>
 #
-# $Id:$
+# $Id$
 #################################################################
 
 usage(){
@@ -29,6 +29,12 @@ if test x"$1" = x-d; then
     dbg=1
     shift
 fi
+
+if test x"$1" != x; then
+    usage
+    exit 0
+fi
+
 
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 

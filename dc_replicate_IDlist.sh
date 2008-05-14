@@ -10,6 +10,7 @@
 
 dbg=1
 eligible_pools="se01_cms se02_cms se03_cms se04_cms se05_cms se06_cms se07_cms"
+force=""
 
 usage(){
     cat <<EOF
@@ -18,6 +19,7 @@ Synopsis:
 
 Options:
          -p "pool1 pool2 ..."  :  specify list of eligible target pools ($eligible_pools)
+         -f                    :  force. Do not prompt for execution
          -d                    :  debug output
 
 Description:
@@ -81,7 +83,7 @@ get_tgt_pool() {
 }
 
 ##############################################################
-TEMP=`getopt -o dhp: --long help -n 'get_rep_ls.sh' -- "$@"`
+TEMP=`getopt -o dfhp: --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -94,6 +96,10 @@ while true; do
             ;;
         -d)
             dbg=1
+            shift
+            ;;
+        -f)
+            force="-f"
             shift
             ;;
         -p)
@@ -112,7 +118,7 @@ while true; do
     esac
 done
 
-idlist=$1
+listfile=$1
 
 
 if test ! -r $DCACHE_SHELLUTILS/dc_utils_lib.sh; then
@@ -121,18 +127,19 @@ if test ! -r $DCACHE_SHELLUTILS/dc_utils_lib.sh; then
 fi
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
-
-if test x"$idlist" = x;then
-    usage
-    echo "Error: No ID list given" >&2
+toremove=""
+if test x"$listfile" = x; then
+   listfile=`mktemp /tmp/dc_replicate_IDlist-$USER.XXXXXXXX`
+   while read line; do
+      echo "$line" >> $listfile
+   done
+   toremove="$toremove $listfile"
+fi
+if test ! -r $listfile; then
+    echo "Error: Cannot read ID list file: $listfile" >&2
     exit 1
 fi
-if test ! -r "$idlist"; then
-      echo "Error: Cannot read ID list: $idlist" >&2
-      exit 1
-fi
 
-toremove=""
 
 tmpfile=`mktemp /tmp/dc_tools-${USER}.XXXXXXXX`
 if test $? -ne 0; then
@@ -162,7 +169,7 @@ while read id cachelocs; do
    echo "$newtgt $srcpool $id" >> $cmdfile
 
    prev=$newtgt
-done < $idlist
+done < $listfile
 
 # now sort the list
 sort -r $cmdfile > $tmpfile 
@@ -183,7 +190,7 @@ cat >> $cmdfile <<EOF
 logoff
 EOF
 
-execute_cmdfile $cmdfile resfile
+execute_cmdfile $force $cmdfile resfile
 toremove="$toremove $resfile"
 
 cat $resfile
