@@ -36,8 +36,7 @@ echo ".." >>$cmdfile
 echo "logoff" >>$cmdfile
 
 toremove="$toremove $cmdfile"
-#execute_cmdfile -f $cmdfile resfile
-execute_cmdfile $cmdfile resfile
+execute_cmdfile -f $cmdfile resfile
 
 #sed -i -ne '/\/pnfs\/\|pathfinder 0/p' $resfile
 #sed -i -e 's/.*pathfinder *\(0[0-9A-Z]*\)/\1/' $resfile
