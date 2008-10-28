@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#################################################################
+# dc_ppcopy_files.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2008-03-04
+#
+# $Id$
+#################################################################
+
 poolnameSRC=$1
 poolnameDST=$2
 idlist=$3
@@ -7,7 +15,7 @@ idlist=$3
 usage() {
 cat <<EOF
 Synopsis:
-          ppcopy_files.sh src-pool dest-pool ID-listfile
+          dc_ppcopy_files.sh src-pool dest-pool ID-listfile
 Description:
           Copies files from the src-pool to the dest-pool. The files are given
           through a list of pnfsIDs in ID-listfile
@@ -47,7 +55,7 @@ if test $? -ne 0; then
 fi
 
 echo "cd $poolnameDST" >> $cmdfile
-for n in `cat $idlist`; do
+for n in `cat $idlist| cut -f1 -d " "`; do
     echo "pp get file $n $poolnameSRC" >> $cmdfile
 done
 echo ".." >> $cmdfile

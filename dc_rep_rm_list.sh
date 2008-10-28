@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#################################################################
+# rep_rm_list.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2008-08-26
+#
+# $Id$
+#################################################################
+
 usage() {
     cat <<EOF
 Synopsis:

@@ -11,7 +11,7 @@ Options:
          -c                    :  command. use \$n as a placeholder for substitutions
                                   by the list contents
          -f                    :  force. Do not prompt for execution
-         -d                    :  debug only. Do not execute
+         -d                    :  debug only. Show shell commands, but do not execute
 
 Description:
       For every line in the list file, the specified command will be executed in the target
@@ -19,7 +19,9 @@ Description:
       Will accept lines on stdin Instead of a list file.
 
 Example:
-      dc_generic_cellcommand.sh -d -c 'rep ls \$n' somePool myPoolIDs.lst
+      dc_generic_cellcommand.sh -c 'rep ls \$n' somePool myPoolIDlist-file
+      dc_get_pending_requests.sh | cut -f1 -d' '|dc_generic_cellcommand.sh -f -c 'rc retry $n' PoolManager
+      dc_generic_cellcommand.sh -d -f -c 'rc failed $n' PoolManager IDlist-file
 
 EOF
 }

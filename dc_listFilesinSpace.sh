@@ -1,10 +1,18 @@
 #!/bin/bash
 
+#################################################################
+# dc_listFilesinSpace.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2008-03-04
+#
+# $Id: dc_get_storageinfo_from_IDlist.sh 255 2008-03-04 11:35:43Z dfeich $
+#################################################################
 usage() {
     cat <<EOF
 Synopsis:
           dc_listFilesinSpace.sh spaceTokenID
 Description:
+          lists files in the space defined by the storage Token
 EOF
 }
 

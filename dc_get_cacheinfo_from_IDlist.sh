@@ -42,7 +42,7 @@ if test $? -ne 0; then
 fi
 
 echo "cd PnfsManager" >>$cmdfile
-for n in `cat $listfile`;do
+for n in `cat $listfile|cut -f1 -d " "`;do
     echo "cacheinfoof $n" >>$cmdfile
 done
 echo ".." >>$cmdfile

@@ -3,7 +3,7 @@
 #################################################################
 # dc_get_storageinfo_from_IDlist.sh
 #
-# Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2008-03-04
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2007-08-26
 #
 # $Id$
 #################################################################
@@ -11,7 +11,7 @@
 usage() {
     cat <<EOF
 Synopsis:
-          get_storageinfo_from_IDlist.sh listfile
+          dc_get_storageinfo_from_IDlist.sh listfile
 Description:
           The listfile must contain a list of pnfsIDs for which
           the storage info entries will be retrieved
@@ -50,7 +50,7 @@ if test $? -ne 0; then
 fi
 
 echo "cd PnfsManager" >>$cmdfile
-for n in `cat $listfile`;do
+for n in `cat $listfile | cut -f1 -d " "`;do
     echo "storageinfoof $n" >>$cmdfile
 done
 echo ".." >>$cmdfile

@@ -5,7 +5,7 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2007-08-27
 #
-# $Id:$
+# $Id$
 #################################################################
 # 2007-08-25 Derek Feichtinger <derek.feichtinger@psi.ch>
 
@@ -37,7 +37,7 @@ check_poolname() {
     fi
     # note: need to use -l which produces longer output, because dcache breaks off the connection uncleanly
     # and short outputs are sometimes lost
-    ssh -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>${tmpfile}.err > $tmpfile <<EOF
+    ssh -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>${tmpfile}.err > $tmpfile <<EOF
 cd PoolManager
 psu ls pool -l
 ..
@@ -101,7 +101,7 @@ execute_cmdfile() {
 	exit 1
     fi
 
-    ssh -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>$errfile > $tmpfile <$cmdfile
+    ssh -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>$errfile > $tmpfile <$cmdfile
 
     # clean out the stupid ssh error messages about the connection break off
     sed -i -e '/ssh.*Pseudo-terminal will not be allocated.*/d' \
