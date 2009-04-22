@@ -13,8 +13,8 @@ Options:
                        admin command script
 
 Description:
-          The listfile must contain a list of pnfsIDs ro remove from the
-          pool with name "poolname".
+          The listfile must contain a list of pnfsIDs in the first column. These files
+          will be removed from the pool with name "poolname".
 EOF
 }
 
@@ -91,7 +91,7 @@ fi
 toremove="$toremove $cmdfile"
 
 echo "cd $poolname" >>$cmdfile
-for n in `cat $listfile`;do
+for n in `cat $listfile|awk '{print $1}'`;do
     echo "rep rm $n$force" >>$cmdfile
 done
 echo ".." >>$cmdfile
