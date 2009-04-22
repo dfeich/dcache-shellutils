@@ -1,39 +1,63 @@
 #!/bin/bash
 
-#################################################################
-# rep_rm_list.sh
-#
-# Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2008-08-26
-#
-# $Id$
-#################################################################
+force=""
+yes=""
 
 usage() {
     cat <<EOF
 Synopsis:
-          rep_rm_list.sh [-f] poolname listfile
+          rep_rm_list.sh [options] poolname listfile
+Options:
+          -f           run the command with the force flag, i.e. "rep rm -force"
+          -y           (yes) Do not prompt before execution of the generated
+                       admin command script
+
 Description:
           The listfile must contain a list of pnfsIDs ro remove from the
           pool with name "poolname".
-          the -f flag will run the "rep rm" commands with the -force flag
-          appended
-          If listfile is omitted, the input will be read from stdin
 EOF
 }
 
-if test x"$1" = x-h; then
-   usage
-   exit 0
-fi
+##############################################################
+TEMP=`getopt -o yf --long help -n 'dc_rep_rm_list.sh' -- "$@"`
+if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
+#echo "TEMP: $TEMP"
+eval set -- "$TEMP"
 
-force=""
-if test x"$1" = x-f; then
-    force=" -force"
-    shift
-fi
+while true; do
+    case "$1" in
+        --help|-h)
+            usage
+            exit
+            ;;
+        -f)
+            force=" -force"
+            shift
+            ;;
+        -y)
+            yes="-f"
+            shift
+            ;;
+        --)
+            shift;
+            break;
+            ;;
+        *)
+            echo "Internal error!"
+            usage
+            exit 1
+            ;;
+    esac
+done
 
 poolname=$1
-listfile=$2
+shift
+
+listfile=$1
+shift
+
+
+
 
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
@@ -73,7 +97,7 @@ done
 echo ".." >>$cmdfile
 echo "logoff" >>$cmdfile
 
-execute_cmdfile $cmdfile retfile
+execute_cmdfile $yes $cmdfile retfile
 toremove="$toremove $retfile"
 
 cat $retfile
