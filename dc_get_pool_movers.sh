@@ -12,8 +12,9 @@ usage(){
 Synopsis: 
       dc_get_pool_movers.sh [pool-listfile]
 Options:
-      -d     :   debug. Show what commands are executed. The output will
-                 be sent to stderr to not contaminate stdout.
+      -d       :   debug. Show what commands are executed. The output will
+                   be sent to stderr to not contaminate stdout.
+      -q queue :   list only movers for the named mover queue
 
 Description:
       Shows all movers of the respective pools. The listing matches exactly
@@ -31,7 +32,7 @@ EOF
 }
 
 ##############################################################
-TEMP=`getopt -o dh --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
+TEMP=`getopt -o dhq: --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -45,6 +46,10 @@ while true; do
         -d)
             debug=1
             shift
+            ;;
+        -q)
+            queue=$2
+            shift 2
             ;;
         --)
             shift;
@@ -61,6 +66,10 @@ done
 listfile=$1
 shift
 
+
+if test x"$queue" != x; then
+   qstr="-queue=$queue"
+fi
 
 toremove=""
 if test x"$listfile" = x; then
@@ -92,7 +101,7 @@ for pool in `cat $listfile`; do
    fi
    cat >> $cmdfile <<EOF
 cd $pool
-mover ls
+mover ls $qstr
 ..
 logoff
 EOF
