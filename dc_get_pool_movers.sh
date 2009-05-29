@@ -7,14 +7,19 @@
 # $Id: dc_get_pool_list.sh 414 2008-05-14 10:19:47Z dfeich $
 #################################################################
 
+debug=0
+beautify=0
+
 usage(){
     cat <<EOF
 Synopsis: 
       dc_get_pool_movers.sh [pool-listfile]
 Options:
+      -b       :   beautify. Print only pnfsID and poolname. This can be directly
+                   piped into commanfs working on the pnfs IDs
+      -q queue :   list only movers for the named mover queue
       -d       :   debug. Show what commands are executed. The output will
                    be sent to stderr to not contaminate stdout.
-      -q queue :   list only movers for the named mover queue
 
 Description:
       Shows all movers of the respective pools. The listing matches exactly
@@ -32,7 +37,7 @@ EOF
 }
 
 ##############################################################
-TEMP=`getopt -o dhq: --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
+TEMP=`getopt -o bdhq: --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -42,6 +47,10 @@ while true; do
         --help|-h)
             usage
             exit
+            ;;
+        -b)
+            beautify=1
+            shift
             ;;
         -d)
             debug=1
@@ -113,8 +122,11 @@ EOF
    rm -f $cmdfile $resfile
 done
 
-
-cat $tmpresfile
+if test x"$beautify" = x1; then
+   sed -e 's/^\([^ ][^ ]*\).* \([0-9A-F][0-9A-F]*\) .*/\2 \1/' $tmpresfile
+else
+   cat $tmpresfile
+fi
 
 rm -f $toremove
 
