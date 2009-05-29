@@ -16,7 +16,7 @@ Synopsis:
       dc_get_pool_movers.sh [pool-listfile]
 Options:
       -b       :   beautify. Print only pnfsID and poolname. This can be directly
-                   piped into commanfs working on the pnfs IDs
+                   piped into commands working on the pnfs IDs
       -q queue :   list only movers for the named mover queue
       -d       :   debug. Show what commands are executed. The output will
                    be sent to stderr to not contaminate stdout.
