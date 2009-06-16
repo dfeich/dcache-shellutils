@@ -10,6 +10,7 @@
 
 dbg=1
 eligible_pools="se01_cms se02_cms se03_cms se04_cms se05_cms se06_cms se07_cms"
+maxrepls=2
 force=""
 
 usage(){
@@ -20,6 +21,9 @@ Synopsis:
 Options:
          -p "pool1 pool2 ..."  :  specify list of eligible target pools ($eligible_pools)
          -f                    :  force. Do not prompt for execution
+         -r number             :  define max number of replicas a file may have on the system
+                                  (so, no copy will be initiated, if there there are already _number_
+                                  of copies existing)   
          -d                    :  debug output
 
 Description:
@@ -83,7 +87,7 @@ get_tgt_pool() {
 }
 
 ##############################################################
-TEMP=`getopt -o dfhp: --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
+TEMP=`getopt -o dfhp:r: --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -104,6 +108,10 @@ while true; do
             ;;
         -p)
             eligible_pools=$2
+            shift 2
+            ;;
+        -r)
+            maxrepl=$2
             shift 2
             ;;
         --)
@@ -157,6 +165,13 @@ toremove="$toremove $cmdfile"
 
 prev=""
 while read id cachelocs; do
+   numrepl=`echo $cachelocs | tr "," " "|wc -w`
+   if test 0"$maxrepl" -gt 0; then
+      if test $numrepl -ge $maxrepl; then
+	  if test $dbg -ne 0; then echo "id=$id cache: $cachelocs   ignore, already has $numrepl replicas"; fi
+	  continue
+      fi
+   fi
    newtgt=`get_tgt_pool "$cachelocs" $prev`
    status=$?
    if test $status -ne 0; then
@@ -181,6 +196,7 @@ while read dstpool srcpool id; do
    if test x"$dstpool" != x"$prevdstpool"; then
       echo -e "..\ncd $dstpool" >> $cmdfile
    fi
+   srcpool=`echo $srcpool|cut -f 1 -d","`
    echo "pp get file $id $srcpool" >> $cmdfile
    prevdstpool=$dstpool
 done < $tmpfile
