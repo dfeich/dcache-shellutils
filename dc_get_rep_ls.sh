@@ -13,16 +13,19 @@ myname=$(basename $0)
 lopt=""
 raw=""
 cachedonly=0
+use_listfile=0
+
 
 usage(){
     cat <<EOF
 Synopsis:
-          $myname [option] poolname
+          $myname [option] poolname [listfile]
 Description:
           lists files in a pool.
 
           -r      : displays raw output
-          -i file : only displays files found in the pnfsID list contained in the file
+          -i      : only displays files found in the pnfsID list given by listfile
+                    or via stdin.
                     if this option is given as -i- then will expect list on stdin
           -l str  : adds a format option -l=str to the admin shell's "rep ls"-command:     
                          s  : sticky files
@@ -37,7 +40,7 @@ Description:
 EOF
 }
 
-TEMP=`getopt -o chi:l:r --long help -n "$myname" -- "$@"`
+TEMP=`getopt -o chil:r --long help -n "$myname" -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -53,8 +56,8 @@ while true; do
             shift
             ;;
         -i)
-            listfile=$2
-            shift 2
+            use_listfile=1
+            shift
             ;;
         -r)
 	    raw=1
@@ -76,6 +79,9 @@ while true; do
     esac
 done
 
+poolname=$1
+listfile=$2
+
 if test x"$lopt" != x -a  $cachedonly -ne 0; then
     usage
     echo "ERROR: Cannot specify both -c and -l options" >&2
@@ -89,27 +95,26 @@ fi
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
 
-poolname=$1
 
-if test x"$listfile" = "x-"; then
-   listfile=`mktemp /tmp/get_pnfsname-$USER.XXXXXXXX`
-   while read line; do
-      echo "$line" >> $listfile
-   done
-   toremove="$toremove $listfile"
-fi
+if test 0"$use_listfile" -ne 0;then
+   if test x"$listfile" = x; then
+       listfile=`mktemp /tmp/get_pnfsname-$USER.XXXXXXXX`
+       while read line; do
+	   echo "$line" >> $listfile
+       done
+       toremove="$toremove $listfile"
 
-if test x"$2" != x; then
-   if test ! -r "$2"; then
-      usage
-      echo "Error: Cannot read ID list: $2"
-      exit 1
+       if test ! -r "$listfile"; then
+	   usage
+	   echo "Error: Cannot read ID list: $2"
+	   exit 1
+       fi
+       if test x"$lopt" != x; then
+	   usage
+	   echo "Error: cannot use -l flag together with an ID list file"
+	   exit 1
+       fi
    fi
-   if test x"$lopt" != x; then
-       echo "Error: cannot use -l flag together with an ID list file"
-       exit 1
-   fi
-   listfile=$2
 fi
 
 if test x"$poolname" = x; then
