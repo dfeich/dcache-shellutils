@@ -1,12 +1,22 @@
 #!/bin/bash
+#################################################################
+# dc_generic_cellcommand.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch>
+#
+# $Id$
+#################################################################
 
+myname=$(basename $0)
+
+# DEFAULTS
 force=""
 debug=0
 
 usage(){
     cat <<EOF
 Synopsis: 
-      dc_generic_cellcommand.sh [options] -c 'command' cellname [listfile]
+      $myname [options] -c 'command' cellname [listfile]
 Options:
          -c                    :  command. use \$n as a placeholder for substitutions
                                   by the list contents
@@ -27,7 +37,7 @@ EOF
 }
 
 ##############################################################
-TEMP=`getopt -o c:df --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
+TEMP=`getopt -o c:df --long help -n "$myname" -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"

@@ -1,9 +1,18 @@
 #!/bin/bash
+#################################################################
+# dc_get_rep_ls-errors.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch>
+#
+# $Id$
+#################################################################
+
+myname=$(basename $0)
 
 usage() {
     cat <<EOF
 Synopsis:
-          dc_get_rep_ls-errors.sh [-r] poolname
+          $myname [-r] poolname
 Description:
           returns an ID list of files with error states
           The -r option will return the raw output.

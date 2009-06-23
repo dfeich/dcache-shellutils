@@ -8,7 +8,10 @@
 # $Id$
 #################################################################
 
-dbg=1
+myname==$(basename $0)
+
+# DEFAULTS
+dbg=0
 eligible_pools="se01_cms se02_cms se03_cms se04_cms se05_cms se06_cms se07_cms"
 maxrepls=2
 force=""
@@ -16,7 +19,7 @@ force=""
 usage(){
     cat <<EOF
 Synopsis:
-          dc_replicate_IDlist.sh -p "pool1 pool2 ..."  id-pool-list
+          $myname -p "pool1 pool2 ..."  id-pool-list
 
 Options:
          -p "pool1 pool2 ..."  :  specify list of eligible target pools ($eligible_pools)
@@ -87,7 +90,7 @@ get_tgt_pool() {
 }
 
 ##############################################################
-TEMP=`getopt -o dfhp:r: --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
+TEMP=`getopt -o dfhp:r: --long help -n "$myname" -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -137,7 +140,7 @@ source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
 toremove=""
 if test x"$listfile" = x; then
-   listfile=`mktemp /tmp/dc_replicate_IDlist-$USER.XXXXXXXX`
+   listfile=`mktemp /tmp/dc_tools-$USER.XXXXXXXX`
    while read line; do
       echo "$line" >> $listfile
    done

@@ -8,10 +8,12 @@
 # $Id$
 #################################################################
 
+myname=$(basename $0)
+
 usage() {
     cat <<EOF
 Synopsis:
-          dc_get_storageinfo_from_IDlist.sh listfile
+          $myname listfile
 Description:
           The listfile must contain a list of pnfsIDs for which
           the storage info entries will be retrieved

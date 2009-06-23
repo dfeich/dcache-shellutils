@@ -4,7 +4,7 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch>
 #
-# $Id: dc_get_pool_list.sh 414 2008-05-14 10:19:47Z dfeich $
+# $Id$
 #################################################################
 
 debug=0

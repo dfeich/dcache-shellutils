@@ -1,12 +1,22 @@
 #!/bin/bash
+#################################################################
+# rep_rm_list.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch>
+#
+# $Id$
+#################################################################
 
+myname=$(basename $0)
+
+# DEFAULTS
 force=""
 yes=""
 
 usage() {
     cat <<EOF
 Synopsis:
-          rep_rm_list.sh [options] poolname listfile
+          $myname [options] poolname listfile
 Options:
           -f           run the command with the force flag, i.e. "rep rm -force"
           -y           (yes) Do not prompt before execution of the generated
@@ -19,7 +29,7 @@ EOF
 }
 
 ##############################################################
-TEMP=`getopt -o yf --long help -n 'dc_rep_rm_list.sh' -- "$@"`
+TEMP=`getopt -o hyf --long help -n "$myname" -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -63,7 +73,7 @@ source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
 toremove=""
 if test x"$listfile" = x; then
-   listfile=`mktemp /tmp/get_pnfsname-$USER.XXXXXXXX`
+   listfile=`mktemp /tmp/${USER}-dc_tools.XXXXXXXX`
    while read line; do
       echo "$line" >> $listfile
    done
@@ -82,7 +92,7 @@ if test $? -ne 0; then
     exit 1
 fi
 
-cmdfile=`mktemp /tmp/rep_rm-$USER.XXXXXXXX`
+cmdfile=`mktemp /tmp/${USER}-dc_tools.XXXXXXXX`
 if test $? -ne 0; then
     echo "Error: Could not create a cmdfile" >&2
     rm -f $toremove

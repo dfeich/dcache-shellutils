@@ -8,10 +8,12 @@
 # $Id$
 #################################################################
 
+myname=$(basename $0)
+
 usage() {
     cat <<EOF
 Synopsis:
-          dc_set_max_movers value listfile [queuename]
+          $myname value listfile [queuename]
 Description:
           Sets the maximum number of active client transfers to
           "value" on all pools found in the list file. Only sets the

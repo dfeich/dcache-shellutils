@@ -7,20 +7,22 @@
 # $Id$
 #################################################################
 
+myname=$(basename $0)
+
 usage(){
     cat <<EOF
 Synopsis:
-          dc_get_pool_list [-l]
+          $myname
 
 Description:
           lists all pools
 
-          -l      : displays raw,long output
+          -r      : displays raw,long output
           -d      : debug
 EOF
 }
 
-if test x"$1" = x-l ; then
+if test x"$1" = x-r ; then
     opt=" $1"
     shift
 fi
@@ -38,7 +40,7 @@ fi
 
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
-cmdfile=`mktemp /tmp/get_pnfsname-$USER.XXXXXXXX`
+cmdfile=`mktemp /tmp/${USER}-${myname}.XXXXXXXX`
 if test $? -ne 0; then
     echo "Error: Could not create a cmdfile" >&2
     exit 1

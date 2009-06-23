@@ -7,6 +7,9 @@
 # $Id$
 #################################################################
 
+myname=$(basename $0)
+
+# DEFAULTS
 lopt=""
 raw=""
 cachedonly=0
@@ -14,7 +17,7 @@ cachedonly=0
 usage(){
     cat <<EOF
 Synopsis:
-          dc_get_rep_ls.sh [option] poolname
+          $myname [option] poolname
 Description:
           lists files in a pool.
 
@@ -34,7 +37,7 @@ Description:
 EOF
 }
 
-TEMP=`getopt -o chi:l:r --long help -n 'get_rep_ls.sh' -- "$@"`
+TEMP=`getopt -o chi:l:r --long help -n "$myname" -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"

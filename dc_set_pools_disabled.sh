@@ -3,7 +3,7 @@
 usage() {
     cat <<EOF
 Synopsis:
-          set_pools_disbled [-n] listfile
+          dc_set_pools_disabled [-n] listfile
 Description:
           The listfile must contain a list of poolnames.
           If you specify the -n flag, all pools will be set to enabled

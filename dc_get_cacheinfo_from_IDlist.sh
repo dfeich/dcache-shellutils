@@ -1,9 +1,18 @@
 #!/bin/bash
+#################################################################
+# dc_get_cacheinfo_from_IDlist.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch>
+#
+# $Id$
+#################################################################
+
+myname=$(basename $0)
 
 usage() {
     cat <<EOF
 Synopsis:
-          get_cacheinfo_from_IDlist.sh listfile
+          $myname listfile
 Description:
           The listfile must contain a list of pnfsIDs for which
           pnfs filenames will be produced

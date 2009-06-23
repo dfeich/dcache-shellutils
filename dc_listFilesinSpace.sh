@@ -5,14 +5,18 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2008-03-04
 #
-# $Id: dc_get_storageinfo_from_IDlist.sh 255 2008-03-04 11:35:43Z dfeich $
+# $Id$
 #################################################################
+
+myname=$(basename $0)
+
 usage() {
     cat <<EOF
 Synopsis:
-          dc_listFilesinSpace.sh spaceTokenID
+          $myname spaceTokenID
 Description:
-          lists files in the space defined by the storage Token
+          Calls the SrmSpaceManager's listFilesInSpace command on the given
+          spaceTokenID
 EOF
 }
 
@@ -55,3 +59,4 @@ toremove="$toremove $resfile"
 
 
 rm -f $toremove
+

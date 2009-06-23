@@ -1,15 +1,29 @@
 #!/bin/bash
+#################################################################
+# dc_get_ID_from_pnfsnamelist.sh
+#
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch>
+#
+# $Id$
+#################################################################
+
+myname=$(basename $0)
 
 usage() {
     cat <<EOF
 Synopsis:
-          get_ID_from_pnfsnamelist.sh listfile
+          $myname listfile
 Description:
           The listfile must contain a list of pnfs filenames for which
           pnfsIDs will be produced
           If listfile is omitted, the input will be read from stdin
 EOF
 }
+
+if test x"$1" = x-h; then
+   usage;
+   exit 0
+fi
 
 listfile=$1
 
