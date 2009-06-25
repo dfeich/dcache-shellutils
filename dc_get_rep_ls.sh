@@ -163,7 +163,7 @@ toremove="$toremove $resfile"
 #         <C-------X--(0)[0]>
 # I have seen <--C-------L(0)[1]> too, but this file had no phys copy at all
 if test $cachedonly -ne 0; then
-    sed -i -ne '/<C-.*/p' $resfile
+    sed -i -ne '/<C----------.*>/p' $resfile
 fi
 
 if test x"$raw" != x1; then

@@ -200,6 +200,7 @@ fi
 
 mkdir $workdir
 cd $workdir
+# here I split the large list into smaller lists
 split -l $bunchsize $pnfslist part_pnfslist_
 num_parts=`ls part_pnfslist_*|wc -l |awk '{print $1}'`
 

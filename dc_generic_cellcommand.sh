@@ -21,6 +21,7 @@ Options:
          -c                    :  command. use \$n as a placeholder for substitutions
                                   by the list contents
          -f                    :  force. Do not prompt for execution
+                                  (optional, but needed if you redirect from stdin)
          -d                    :  debug only. Show shell commands, but do not execute
 
 Description:
