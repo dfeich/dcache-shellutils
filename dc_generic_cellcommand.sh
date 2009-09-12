@@ -31,8 +31,8 @@ Description:
 
 Example:
       dc_generic_cellcommand.sh -c 'rep ls \$n' somePool myPoolIDlist-file
-      dc_get_pending_requests.sh | cut -f1 -d' '|dc_generic_cellcommand.sh -f -c 'rc retry $n' PoolManager
-      dc_generic_cellcommand.sh -d -f -c 'rc failed $n' PoolManager IDlist-file
+      dc_get_pending_requests.sh | cut -f1 -d' '|dc_generic_cellcommand.sh -f -c 'rc retry \$n' PoolManager
+      dc_generic_cellcommand.sh -d -f -c 'rc failed \$n' PoolManager IDlist-file
 
 EOF
 }
