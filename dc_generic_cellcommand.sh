@@ -26,8 +26,8 @@ Options:
 
 Description:
       For every line in the list file, the specified command will be executed in the target
-      cell, where the \$n placeholder will be replaced by a line in the list file.
-      Will accept lines on stdin Instead of a list file.
+      cell, where the \$n placeholder will be replaced by the line's contents.
+      The tool will accept lines on stdin instead of a list file.
 
 Example:
       dc_generic_cellcommand.sh -c 'rep ls \$n' somePool myPoolIDlist-file
