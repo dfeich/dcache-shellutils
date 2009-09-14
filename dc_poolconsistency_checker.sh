@@ -4,7 +4,7 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2007-12-20
 #
-# $Id:$
+# $Id$
 #################################################################
 
 dbg=1
@@ -16,6 +16,8 @@ Synopsis: dc_poolconsistency_checker.sh poolname
 Description:
           This tool will check a pool for files with error states and
           will locate files with missing pnfs entries
+          The result files will be saved to a subdirectory named
+          consistency-\${poolname}-\${DATE}
 EOF
 }
 
