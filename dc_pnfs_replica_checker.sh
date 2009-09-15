@@ -22,14 +22,19 @@ Synopsis: dc_pnfs_replica_checker.sh [options] pnfs-path
 
 Description:
           This tool will collect information on all regular files below the given
-          pnfs path or of a given list file. It will locate pnfs entries with no
-          IDs and also entries with no replicates. All results will be written to
-          a results directory.
+          pnfs path or on all files of a given list file with pnfs names. It will locate
+          pnfs entries with no mapped IDs and also entries with no replicates on any pool.
+          All results will be written to a results directory.
+
           Note that you will have to have pnfs mounted, if you want to use the
-          invocation with the pnfs-path specified.
+          invocation recursing through a pnfs-path.
+
+          The sript will carry out its operations on bunches of files (number can be
+          defined by the -b option), in order to not overwhelm the shell.
+
 Options:
           -r directory       : specifies the results directory name [$resdir]
-          -l filenama        : specify a list of pnfs names instead of using a base pnfs path
+          -l filename        : specify a list of pnfs names instead of using a base pnfs path
           -b integer         : process the list in bunches of this size [$bunchsize]          
 EOF
 }
