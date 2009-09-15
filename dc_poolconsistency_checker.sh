@@ -18,6 +18,13 @@ Description:
           will locate files with missing pnfs entries
           The result files will be saved to a subdirectory named
           consistency-\${poolname}-\${DATE}
+
+          Output files:
+          \${poolname}-ID.lst           : List of pool's pnfs IDs
+          \${poolname}-IDpnfs.lst       : pnfsIDs mapped to pnfs names
+          \${poolname}-errors.lst       : Files with error states (rep ls -l=e)
+          \${poolname}-missingPnfs.lst  : Pools files with no pnfs mapping
+
 EOF
 }
 
