@@ -10,8 +10,8 @@
 myname=$(basename $0)
 
 # DEFAULTS
-force=""
-debug=0
+#
+##########
 
 usage(){
     cat <<EOF
@@ -97,11 +97,6 @@ toremove="$toremove $cmdfile"
 
 execute_cmdfile -f $cmdfile resfile
 toremove="$toremove $resfile"
-
-
-#if test x"$opt" = x; then
-#   sed -i -e '/(.*)/d' -e '/^ *$/d' $retfile
-#fi
 
 cat $resfile
 
