@@ -16,7 +16,7 @@ debug=0
 usage(){
     cat <<EOF
 Synopsis: 
-      $myname [options] -c 'command' cellname [listfile]
+      $myname [options] cellname
 Options:
          -n                    :  number of pinboard lines to show
 
