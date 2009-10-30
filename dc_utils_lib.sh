@@ -101,7 +101,21 @@ execute_cmdfile() {
 	exit 1
     fi
 
-    ssh -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>$errfile > $tmpfile <$cmdfile
+    # dcache ssh often shuts down the connection uncleanly... and sometimes it even closes
+    #   the connection before output has been given back, other times the output may not be complete
+    #   We test whether the final logoff command is visible in the output
+    local callok=1
+    local tries=0
+    while test $callok -ne 0; do
+       if test $tries -gt 2; then
+          echo "Error: Continual failure ($tries tries) in dc_utils.sh/execute_cmdfile to get full dcache response" >&2
+	  break
+       fi
+       ((tries=$tries+1))
+       ssh -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>$errfile > $tmpfile <$cmdfile
+       egrep -q 'admin  *>  *logoff' $tmpfile
+       callok=$?
+    done
 
     # clean out the stupid ssh error messages about the connection break off
     sed -i -e '/ssh.*Pseudo-terminal will not be allocated.*/d' \
