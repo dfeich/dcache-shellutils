@@ -67,6 +67,7 @@ sed -i -e 's/.*storageinfoof *\(0[0-9A-Z]*\)/\1/' -e 's/^ *//' $resfile
 
 # collect id and info on single lines
 state=id
+cat $resfile
 cat $resfile|while read line
 do
    if test $state = id; then
@@ -76,7 +77,11 @@ do
 	 state=storageinfo
       fi
    elif test $state = storageinfo; then
-      line=$(echo $line|sed -e 's/ /,/g')
+      #line=$(echo $line|sed -e 's/ /,/g')
+      a=$(expr "$line" : '.*storageinfoof failed : path .* not found')
+      if test 0$a -gt 0; then
+         line="Error:Missing"
+      fi
       echo "$id $line"
       state=id
    fi
