@@ -67,7 +67,6 @@ sed -i -e 's/.*storageinfoof *\(0[0-9A-Z]*\)/\1/' -e 's/^ *//' $resfile
 
 # collect id and info on single lines
 state=id
-cat $resfile
 cat $resfile|while read line
 do
    if test $state = id; then
