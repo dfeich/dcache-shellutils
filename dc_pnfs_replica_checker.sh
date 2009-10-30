@@ -19,6 +19,7 @@ bunchsize=1000
 usage() {
     cat <<EOF
 Synopsis: dc_pnfs_replica_checker.sh [options] pnfs-path
+          dc_pnfs_replica_checker.sh [options] -l pnfs-namelist-file
 
 Description:
           This tool will collect information on all regular files below the given
@@ -223,10 +224,10 @@ echo -n "Merging the results...."
 cat $workdir/*_ID.lst > $IDlist
 cat $workdir/*_IDpnfs.lst > $IDpnfslist
 cat $workdir/*_cacheinfo.lst > $cachelist
-cat $workdir/*_noID_pnfs.lst > $noIDlist
-cat $workdir/*_noreplicate_ID.lst > $norepllist
-cat $workdir/*_noreplicate_pnfs.lst > $noreplpnfslist
-echo "OK  (processed a total of $numfiles entries"
+cat $workdir/*_noID_pnfs.lst > $noIDlist 2>/dev/null
+cat $workdir/*_noreplicate_ID.lst > $norepllist 2>/dev/null
+cat $workdir/*_noreplicate_pnfs.lst > $noreplpnfslist 2>/dev/null
+echo "OK  (processed a total of $numfiles entries)"
 
 num_noID=`wc -l $noIDlist|awk '{print $1}'`
 if test $num_noID -gt 0; then
