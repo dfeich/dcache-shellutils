@@ -78,10 +78,14 @@ do
       name=$line
       state=id
   elif test $state = id; then
+      findfail=$(expr "$line" : '.*pnfsidof failed.*not found')
+      if test 0$findfail -gt 0; then
+         line="Error:Missing"
+      fi
       echo "$line $name"
       state=pnfs
   else
-      echo "ERROR:state=$state   line=$line" >&2
+      echo "ERROR:state=$state  namematch=$a  line=$line" >&2
       rm -f $toremove
       exit
   fi
