@@ -147,7 +147,7 @@ done
 
 pnfs_basepath=$1
 
-mkdir $resdir
+mkdir -p $resdir
 if test $? -ne 0; then
    echo "failed to create results directory $resdir" >&2
    exit 1
@@ -201,7 +201,7 @@ if test x"$pnfs_srclist" = x; then
 else
    cp $pnfs_srclist $pnfslist
    numfiles=`wc -l $pnfslist|awk '{print $1}'`
-   echo "src list file contains $pnfs_srclist $numfiles entries"
+   echo "src list file $pnfs_srclist contains $numfiles entries"
 fi
 
 mkdir $workdir
@@ -231,11 +231,11 @@ echo "OK  (processed a total of $numfiles entries)"
 
 num_noID=`wc -l $noIDlist|awk '{print $1}'`
 if test $num_noID -gt 0; then
-   echo "WARNING: $num_noID entries lack a corresponding ID!"
+   echo "WARNING: $num_noID pnfs entries lack a corresponding ID!"
 fi
 num_norepl=`wc -l $norepllist|awk '{print $1}'`
 if test $num_norepl -gt 0; then
-   echo "WARNING: $num_norepl entries lack a replicate!"
+   echo "WARNING: $num_norepl entries have not a single physical replicate!"
 fi
 
 exit 0
