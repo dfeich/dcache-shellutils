@@ -9,6 +9,11 @@
 
 myname=$(basename $0)
 
+# DEFAULTS
+condition=""
+raw=0
+############
+
 usage(){
     cat <<EOF
 Synopsis:
@@ -17,29 +22,63 @@ Synopsis:
 Description:
           lists all pools
 
-          -r      : displays raw,long output
-          -d      : debug
+          -r           : displays raw,long output
+          -o condition : only list pools with the given condition (simple text match done in
+                         the raw pool list output. It's more correctly a filter)
+                               -o ro   (short for rdOnly=True)
+                               -o d    (short for mode=disabled)
+          -d           : debug
 EOF
 }
 
-if test x"$1" = x-r ; then
-    opt=" $1"
-    shift
-fi
+##############################################################
+TEMP=`getopt -o dro: --long help -n "$myname" -- "$@"`
+if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
+#echo "TEMP: $TEMP"
+eval set -- "$TEMP"
 
-if test x"$1" = x-d; then
-    dbg=1
-    shift
-fi
+while true; do
+    case "$1" in
+        --help|-h)
+            usage
+            exit
+            ;;
+        -d)
+            dbg=1
+            shift
+            ;;
+        -r)
+            raw=1
+            shift
+            ;;
+        -o)
+            condition="$2"
+            shift 2
+            ;;
+        --)
+            shift;
+            break;
+            ;;
+        *)
+            echo "Internal error!"
+            usage
+            exit 1
+            ;;
+    esac
+done
 
-if test x"$1" != x; then
-    usage
-    exit 0
-fi
-
+case "$condition" in
+   ro)
+      condition="rdOnly=true"
+      ;;
+    d)
+      condition="mode=disabled"
+      ;;
+esac
 
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
+toremove=""
 cmdfile=`mktemp /tmp/${USER}-${myname}.XXXXXXXX`
 if test $? -ne 0; then
     echo "Error: Could not create a cmdfile" >&2
@@ -53,7 +92,11 @@ psu ls pool -l
 logoff
 EOF
 
+toremove="$toremove $cmdfile"
+
 execute_cmdfile -f $cmdfile retfile
+toremove="$toremove $retfile"
+
 if test x"$dbg" = x1; then
    cat $cmdfile
    echo "---------------------"
@@ -61,14 +104,15 @@ if test x"$dbg" = x1; then
    echo "--------------------"
 fi
 
-rm -f $cmdfile
-
-
-if test x"$opt" = x; then
-   #sed -i -e '/(.*)/d' -e '/^ *$/d' $retfile
-   sed -nie 's/^\([^ ]*\).*enabled.*/\1/p' $retfile
+if test x"$condition" != x; then
+   sed -i -ne "/$condition/p" $retfile
 fi
 
+if test $raw -eq 0 ; then
+   #sed -i -e '/(.*)/d' -e '/^ *$/d' $retfile
+   sed -i -ne 's/^\([^ ]*\).*enabled.*/\1/p' $retfile
+fi
 cat $retfile
-rm -f $retfile
+
+rm -f $toremove
 
