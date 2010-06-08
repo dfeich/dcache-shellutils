@@ -18,7 +18,7 @@ Options:
       -b       :   beautify. Print only pnfsID and poolname. This can be directly
                    piped into commands working on the pnfs IDs
       -k           generate a list that can be filtered and piped to the dc_kill_pool_movers
-                   command
+                   command (includes pnfs filenames. may take slightly longer)
       -q queue :   list only movers for the named mover queue
       -d       :   debug. Show what commands are executed. The output will
                    be sent to stderr to not contaminate stdout.
