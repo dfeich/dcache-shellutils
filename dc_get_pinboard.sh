@@ -4,7 +4,7 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch>
 #
-# $Id: dc_get_pinboard.sh  1864 2009-09-12 10:24:43Z dfeich $
+# $Id$
 #################################################################
 
 myname=$(basename $0)

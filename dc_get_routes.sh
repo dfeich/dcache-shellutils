@@ -5,7 +5,7 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2008-03-04
 #
-# $Id: dc_ppcopy_files.sh 1726 2009-06-25 13:12:11Z dfeich $
+# $Id$
 #################################################################
 
 myname=$(basename $0)

@@ -4,7 +4,8 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch>
 #
-# $Id: dc_get_pool_movers.sh 1723 2009-06-23 10:36:30Z dfeich $
+# $Id$
+# $URL:$
 #################################################################
 
 debug=0
