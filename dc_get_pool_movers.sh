@@ -17,6 +17,8 @@ Synopsis:
 Options:
       -b       :   beautify. Print only pnfsID and poolname. This can be directly
                    piped into commands working on the pnfs IDs
+      -k           generate a list that can be filtered and piped to the dc_kill_pool_movers
+                   command
       -q queue :   list only movers for the named mover queue
       -d       :   debug. Show what commands are executed. The output will
                    be sent to stderr to not contaminate stdout.
@@ -37,7 +39,7 @@ EOF
 }
 
 ##############################################################
-TEMP=`getopt -o bdhq: --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
+TEMP=`getopt -o bdhkq: --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -54,6 +56,10 @@ while true; do
             ;;
         -d)
             debug=1
+            shift
+            ;;
+        -k)
+            beautify=2
             shift
             ;;
         -q)
@@ -124,6 +130,16 @@ done
 
 if test x"$beautify" = x1; then
    sed -e 's/^\([^ ][^ ]*\).* \([0-9A-F][0-9A-F]*\) .*/\2 \1/' $tmpresfile
+elif test x"$beautify" = x2; then
+   tmpnamefile=`mktemp /tmp/dc_utils-$USER.XXXXXXXX`
+   if test $? -ne 0; then
+       echo "Error: Could not create a temporary result file" >&2
+       rm -f $toremove
+       exit 1
+   fi
+   toremove="$toremove $tmpnamefile"
+   awk '{print $6}' $tmpresfile| dc_get_pnfsname_from_IDlist.sh > $tmpnamefile
+   paste <(awk '{print $1,$2,$3,$4}' $tmpresfile) $tmpnamefile
 else
    cat $tmpresfile
 fi
