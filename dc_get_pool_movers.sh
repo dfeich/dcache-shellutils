@@ -139,7 +139,7 @@ elif test x"$beautify" = x2; then
    fi
    toremove="$toremove $tmpnamefile"
    awk '{print $6}' $tmpresfile| dc_get_pnfsname_from_IDlist.sh > $tmpnamefile
-   paste <(awk '{print $1,$2,$3,$4}' $tmpresfile) $tmpnamefile
+   paste <(awk '{print $1,$2,$3,$4, $5}' $tmpresfile) $tmpnamefile
 else
    cat $tmpresfile
 fi
