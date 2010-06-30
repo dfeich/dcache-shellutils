@@ -33,7 +33,7 @@ Description:
 
 Examples:
       dc_get_pool_movers.sh cmspools.lst
-      echo cmspools.lst | dc_get_pool_movers.sh
+      cat cmspools.lst | dc_get_pool_movers.sh
       dc_get_pool_list.sh | dc_get_pool_movers.sh
 EOF
 }
