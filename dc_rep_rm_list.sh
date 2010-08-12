@@ -19,6 +19,7 @@ Synopsis:
           $myname [options] poolname listfile
 Options:
           -f           run the command with the force flag, i.e. "rep rm -force"
+                       this is needed for files which are pinned (i.e. not cached-only)
           -y           (yes) Do not prompt before execution of the generated
                        admin command script
 
