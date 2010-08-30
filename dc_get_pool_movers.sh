@@ -9,6 +9,7 @@
 
 debug=0
 beautify=0
+timestamp=0
 
 usage(){
     cat <<EOF
@@ -22,6 +23,8 @@ Options:
       -q queue :   list only movers for the named mover queue
       -d       :   debug. Show what commands are executed. The output will
                    be sent to stderr to not contaminate stdout.
+      -t       :   append a timestamp (tagged with ts=) to each output line
+                   only affects raw default output
 
 Description:
       Shows all movers of the respective pools. The listing matches exactly
@@ -39,7 +42,7 @@ EOF
 }
 
 ##############################################################
-TEMP=`getopt -o bdhkq: --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
+TEMP=`getopt -o bdhkq:t --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -65,6 +68,10 @@ while true; do
         -q)
             queue=$2
             shift 2
+            ;;
+        -t)
+            timestamp=1
+            shift
             ;;
         --)
             shift;
@@ -107,6 +114,7 @@ if test $? -ne 0; then
     exit 1
 fi
 
+myts=""
 toremove="$toremove $resfile"
 for pool in `cat $listfile`; do
    cmdfile=`mktemp /tmp/dc_utils-gpm-$USER.XXXXXXXX`
@@ -123,8 +131,11 @@ EOF
    if test x"$debug" = x1; then
       cat $cmdfile >&2
    fi
+   if test x"$timestamp" = x1; then
+      myts=" ts=$(date +%s)"
+   fi
    execute_cmdfile -f $cmdfile resfile
-   sed -ne "s/^\([0-9][0-9]*  *.*\)$/$pool \1/p" $resfile >> $tmpresfile
+   sed -ne "s/^\([0-9][0-9]*  *.*\)$/$pool \1$myts/p" $resfile  >> $tmpresfile
    rm -f $cmdfile $resfile
 done
 
