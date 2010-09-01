@@ -23,6 +23,15 @@ if test x"$DCACHEADMINPORT" = x; then
     exit 1
 fi
 
+keyfileopt=""
+if test x"$DCACHEADMIN_KEY" != x; then
+    if test ! -r "$DCACHEADMIN_KEY"; then
+        echo "Error:Cannot read keyfile (DCACHEADMIN_KEY=$DCACHEADMIN_KEY)" >&2
+        exit 1
+    fi
+    keyfileopt="-i $DCACHEADMIN_KEY"
+fi
+
 # returns 0 for OK, i.e. the poolname exists, otherwise 1
 check_poolname() {
     poolname=$1
@@ -37,7 +46,7 @@ check_poolname() {
     fi
     # note: need to use -l which produces longer output, because dcache breaks off the connection uncleanly
     # and short outputs are sometimes lost
-    ssh -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>${tmpfile}.err > $tmpfile <<EOF
+    ssh $keyfileopt -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>${tmpfile}.err > $tmpfile <<EOF
 cd PoolManager
 psu ls pool -l
 ..
@@ -112,7 +121,7 @@ execute_cmdfile() {
 	  break
        fi
        ((tries=$tries+1))
-       ssh -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>$errfile > $tmpfile <$cmdfile
+       ssh $keyfileopt -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>$errfile > $tmpfile <$cmdfile
        egrep -q 'admin  *>  *logoff' $tmpfile
        callok=$?
     done
