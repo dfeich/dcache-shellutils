@@ -15,7 +15,7 @@ mode="route"
 usage() {
 cat <<EOF
 Synopsis:
-          $myname "cert-DN" "VOMS FQAN"
+          $myname "cert-DN" "VOMS_FQAN1,... ,VOMS_FQANX"
 
 Options:
          -h/--help   : this help text
@@ -23,6 +23,13 @@ Options:
 Description:
           Outputs the gPlazma mapping of the cert/voms info to a local
           dcache user
+
+Example:
+   dc_get_usermapping.sh someDN   "/ops,/ops/NGI,/ops/NGI/Germany"
+
+      someDN/ops mapped as: opsuser 800 [800] /
+      someDN/ops/NGI mapped as: null
+      someDN/ops/NGI/Germany mapped as: opsuser 800 [800] /
 
 EOF
 }
