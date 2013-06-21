@@ -35,14 +35,12 @@ fi
 if test x"$DCACHE_VERSION" != x; then
     majorv=$(expr $DCACHE_VERSION : '\([0-9]*\)\.')
     minorv=$(expr $DCACHE_VERSION : '[0-9]*\.\([0-9]*\)')
-    echo "$minorv $majorv" >&2
     if test $majorv -ge 2 -a $minorv -ge 2; then
 	sshoptions="-x -2 $keyfileopt -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
     else
 	sshoptions="-x $keyfileopt -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST"
     fi
 fi
-    echo "$sshoptions" >&2
 
 # returns 0 for OK, i.e. the poolname exists, otherwise 1
 check_poolname() {
