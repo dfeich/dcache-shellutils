@@ -9,6 +9,7 @@
 #################################################################
 
 myname=$(basename $0)
+flag_raw=0
 
 usage() {
     cat <<EOF
@@ -22,15 +23,19 @@ Description:
 EOF
 }
 
-listfile=$1
-
-
-
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 if test x"$1" = x-h; then
    usage
    exit 0
 fi
+
+if test x"$1" = x-r; then
+   flag_raw=1
+   shift
+   echo $@
+fi
+
+listfile=$1
 
 if test x"$listfile" = x; then
    listfile=`mktemp /tmp/get_pnfsname-$USER.XXXXXXXX`
@@ -64,6 +69,11 @@ toremove="$toremove $resfile"
 
 sed -i -e 's/.*storageinfoof *\(0[0-9A-Z]*\)/\1/' -e 's/^ *//' $resfile
 
+if test $flag_raw -eq 1; then
+   cat $resfile >&2
+   #rm -f $toremove
+   #exit 0
+fi
 
 # collect id and info on single lines
 state=id
