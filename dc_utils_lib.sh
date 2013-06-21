@@ -32,6 +32,18 @@ if test x"$DCACHEADMIN_KEY" != x; then
     keyfileopt="-i $DCACHEADMIN_KEY"
 fi
 
+if test x"$DCACHE_VERSION" != x; then
+    majorv=$(expr $DCACHE_VERSION : '\([0-9]*\)\.')
+    minorv=$(expr $DCACHE_VERSION : '[0-9]*\.\([0-9]*\)')
+    echo "$minorv $majorv" >&2
+    if test $majorv -ge 2 -a $minorv -ge 2; then
+	sshoptions="-x -2 $keyfileopt -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
+    else
+	sshoptions="-x $keyfileopt -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST"
+    fi
+fi
+    echo "$sshoptions" >&2
+
 # returns 0 for OK, i.e. the poolname exists, otherwise 1
 check_poolname() {
     poolname=$1
@@ -44,9 +56,10 @@ check_poolname() {
 	echo "Error: Could not create a tmpfile" >&2
 	exit 1
     fi
-    # note: need to use -l which produces longer output, because dcache breaks off the connection uncleanly
-    # and short outputs are sometimes lost
-    ssh $keyfileopt -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>${tmpfile}.err > $tmpfile <<EOF
+    # note: need to use -l which produces longer output, because
+    # dcache breaks off the connection uncleanly and short outputs are
+    # sometimes lost
+    ssh $sshoptions 2>${tmpfile}.err > $tmpfile <<EOF
 cd PoolManager
 psu ls pool -l
 ..
@@ -121,7 +134,7 @@ execute_cmdfile() {
 	  break
        fi
        ((tries=$tries+1))
-       ssh $keyfileopt -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST 2>$errfile > $tmpfile <$cmdfile
+       ssh $sshoptions 2>${tmpfile}.err > $tmpfile <$cmdfile
        egrep -q 'admin  *>  *logoff' $tmpfile
        callok=$?
     done
