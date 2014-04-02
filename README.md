@@ -2,24 +2,30 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#sec-1">1. Introduction</a></li>
+<li><a href="#sec-1">1. Introduction</a>
+<ul>
+<li><a href="#sec-1-1">1.1. List of available commands</a></li>
+</ul>
+</li>
 <li><a href="#sec-2">2. Installation and Configuration</a></li>
-<li><a href="#sec-3">3. Examples</a>
+<li><a href="#sec-3">3. Some implementation details</a></li>
+<li><a href="#sec-4">4. Examples</a>
 <ul>
-<li><a href="#sec-3-1">3.1. Mapping a number of pnfs filenames to dCache IDs and then to cache locations on fileservers</a></li>
-<li><a href="#sec-3-2">3.2. Erasing cached-only files from a pool</a></li>
-<li><a href="#sec-3-3">3.3. Finding and releasing hanging transfers</a></li>
-<li><a href="#sec-3-4">3.4. Finding all active movers for WAN or local dcap accesses for a VO</a></li>
-<li><a href="#sec-3-5">3.5. Finding a number of movers and selectively kill them based on which files they are accessing</a></li>
-<li><a href="#sec-3-6">3.6. Consistency checks</a>
+<li><a href="#sec-4-1">4.1. Mapping a number of pnfs filenames to dCache IDs and then to cache locations on fileservers</a></li>
+<li><a href="#sec-4-2">4.2. Erasing cached-only files from a pool</a></li>
+<li><a href="#sec-4-3">4.3. Finding and releasing hanging transfers</a></li>
+<li><a href="#sec-4-4">4.4. Finding all active movers for WAN or local dcap accesses for a VO</a></li>
+<li><a href="#sec-4-5">4.5. Finding a number of movers and selectively kill them based on which files they are accessing</a></li>
+<li><a href="#sec-4-6">4.6. Consistency checks</a>
 <ul>
-<li><a href="#sec-3-6-1">3.6.1. Correct all the files in a pool with known error state</a></li>
-<li><a href="#sec-3-6-2">3.6.2. Locate a pool's files with no pnfs entries</a></li>
-<li><a href="#sec-3-6-3">3.6.3. Find files with no replicates</a></li>
+<li><a href="#sec-4-6-1">4.6.1. Correct all the files in a pool with known error state</a></li>
+<li><a href="#sec-4-6-2">4.6.2. Locate a pool's files with no pnfs entries</a></li>
+<li><a href="#sec-4-6-3">4.6.3. Find files with no replicates</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li><a href="#sec-5">5. License</a></li>
 </ul>
 </div>
 </div>
@@ -27,19 +33,18 @@
 
 # Introduction
 
-The Shellutils are a collection of shell scripts which help to
-ineract with the dcache (<http://www.dcache.org/>) storage
-manager. They work by just piping commands via ssh to the dcache
-admin shell and then parse the output. They all use the same basic
-bash library `dc_utils_lib.sh` to execute commands on the admin
-shell and retrieve output, so it is very easy to add new commands.
+The dCache Shellutils are a collection of shell scripts which help
+to ineract with the dcache (<http://www.dcache.org/>) storage manager.
 
-LICENSE: GPL 
+My main aim was to get a number of small tools which can be used
+in the typical manner of **unix commands**, so one should be able to
+combine them easily with pipe chains, e.g. get a list of files,
+then doing some regexp selection using a normal Unix tool, and
+then pipe it to another dcache shellutil for operating on the
+resulting list.
 
 The shellutils make it easy to **execute commands on large lists** of
-filenames or IDs, and to chain commands with pipes. Working with
-them offers the same kind of possibilities as with typical unix
-shell commands. Most tools take some list from a file or stdin as
+filenames or IDs. Most tools take some list from a file or stdin as
 input, and they will return a list on stdout, enabling them to be
 chained in typical Unix style.
 
@@ -48,8 +53,30 @@ and they are nicer to handle than the cumbersome admin
 shell. Looking at the scripts, one can see what admin shell commands
 are used.
 
+The following example gets all the dcache PNFS-IDs from a list of
+dache filenames and the pipes the list of IDs into the next command
+which returns the location on which servers the files are physically
+located.
+
+    dc_get_ID_from_pnfsnamelist.sh files-pnfs.lst |dc_get_cacheinfo_from_IDlist.sh
+    
+    000200000000000000048010 se05_cms
+    00020000000000000004BE80 se07_cms,se02_cms
+    00020000000000000004DE88 se05_cms
+    000200000000000000053B38 se05_cms,se06_cms
+    000200000000000000056238 se06_cms
+
+Or another example, where the first command in the chain gets a list
+of all pools of the dcache, then greps for the ones that have "cms"
+in their name, then gets a list of active transfers for each of
+these pools, greps for all filenames containing
+"/store/user/somename" and then kills those movers that are
+delivering files matching the resulting list.
+
+    dc_get_pool_list.sh | grep cms | dc_get_pool_movers.sh -k | grep "/store/user/somename"| dc_kill_pool_movers.sh
+
 Note: All tools will display documentation when invoked with an `-h`
-flag:
+flag, e.g.
 
     dc_get_pool_movers.sh -h
     
@@ -77,26 +104,83 @@ flag:
           cat cmspools.lst | dc_get_pool_movers.sh
           dc_get_pool_list.sh | dc_get_pool_movers.sh
 
+## List of available commands
+
+    dc_generic_cellcommand.sh
+    dc_get_active_transfers.sh
+    dc_get_cacheinfo_from_IDlist.sh
+    dc_get_CopyManager_errors.sh
+    dc_get_ID_from_pnfsnamelist.sh
+    dc_get_pending_requests.sh
+    dc_get_pinboard.sh
+    dc_get_pnfsname_from_IDlist.sh
+    dc_get_pool_list.sh
+    dc_get_pool_movers.sh
+    dc_get_rep_ls-errors.sh
+    dc_get_rep_ls.sh
+    dc_get_routes.sh
+    dc_get_storageinfo_from_IDlist.sh
+    dc_get_usermapping.sh
+    dc_kill_pool_movers.sh
+    dc_listFilesinSpace.sh
+    dc_pnfs_replica_checker.sh
+    dc_poolconsistency_checker.sh
+    dc_ppcopy_files.sh
+    dc_replicate_IDlist.sh
+    dc_rep_rm_list.sh
+    dc_rep_set_precious.sh
+    dc_set_max_movers.sh
+    dc_set_pools_disabled.sh
+    dc_set_pools_readonly.sh
+    dc_set_precious.sh
+
 # Installation and Configuration
 
-First of all, you should deposit your public SSH key in the
+You must obtain passwordless SSH access to your dCache's admin
+shell.  First of all, you should deposit your public SSH key in the
 appropriate `/opt/d-cache/config/authorized_keys` (dcache versions
 < 2) or `/etc/dcache/admin/authorized_keys2` (dcache versions > 2)
 file on the node running the admin shell service. **IMPORTANT**: The
 `name tag` (last field of the key line) must be changed to `admin`
-(seems no longer required in the latest versions)!  This will allow
-you to connect without having to type a password every time.
+(though this seems no longer required in the newer dcache versions)!
+This will allow you to connect without having to type a password
+every time.
 
-Define the following three environment variables
+Define the following three environment variables in your shell
+environment:
 
 -   `DCACHEADMINHOST`: hostname of admin interface
 -   `DCACHEADMINPORT`: port number of admin interface
--   `DCACHE_SHELLUTILS`: directory to which you checked out the shellutils (needed, so the scripts can find the `dc_utils_lib.sh` library)
+-   `DCACHE_SHELLUTILS`: directory to which you installed the
+    shellutils (needed, so the scripts can find the `dc_utils_lib.sh`
+    library which they need to source)
 
 In addition you may also want to define
 
--   `DCACHEADMIN_KEY`: location of an ssh keyfile for accessing the dcache admin shell (if not found in the default location)
--   `DCACHE_VERSION`: dcache version (e.g. `2.2`). Newer versions of dcache allow SSH v2 access.
+-   `DCACHEADMIN_KEY`: location of an ssh keyfile for accessing the
+    dcache admin shell (if not found in the default location)
+-   `DCACHE_VERSION`: dcache version (e.g. `2.2`). Newer versions of
+    dcache allow SSH v2 access.
+
+# Some implementation details
+
+The dCache shellutils work by just piping commands via ssh to the
+dcache admin shell and then parsing the output. All use the same
+basic bash library `dc_utils_lib.sh` to execute commands on the
+admin shell and retrieve output, so it is very easy to add new
+commands.
+
+On the other hand the shell has its limits as a programming
+environment for dealing with complex parsing (these limits are
+however often much less constraining than what one usually expects).
+Also, the performance is naturally limited, even though the going
+through the admin shell tends to be the biggest bottleneck.
+
+I have used these tools for several years, but since some of my command
+naming decisions seemed unlucky for me, I never published the tools.
+Now I decided to move the sources to github, and maybe some other
+people still may be interested to use them or adapt them to their
+own style.
 
 # Examples
 
@@ -104,20 +188,20 @@ In addition you may also want to define
 
 Put the filenames into a file `files-pnfs.lst` , one per line (you could also pipe the list directly into the dc<sub>\*</sub> commands):
 
-    /pnfs/lcg.cscs.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FA
-    /pnfs/lcg.cscs.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FB
-    /pnfs/lcg.cscs.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FC
-    /pnfs/lcg.cscs.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FE
-    /pnfs/lcg.cscs.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FF
+    /pnfs/mysite.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FA
+    /pnfs/mysite.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FB
+    /pnfs/mysite.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FC
+    /pnfs/mysite.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FE
+    /pnfs/mysite.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FF
 
 Then use the following command:
 
     $> dc_get_ID_from_pnfsnamelist.sh files-pnfs.lst
-    000200000000000000048010 /pnfs/lcg.cscs.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FA
-    00020000000000000004BE80 /pnfs/lcg.cscs.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FB
-    00020000000000000004DE88 /pnfs/lcg.cscs.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FC
-    000200000000000000053B38 /pnfs/lcg.cscs.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FE
-    000200000000000000056238 /pnfs/lcg.cscs.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FF
+    000200000000000000048010 /pnfs/mysite.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FA
+    00020000000000000004BE80 /pnfs/mysite.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FB
+    00020000000000000004DE88 /pnfs/mysite.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FC
+    000200000000000000053B38 /pnfs/mysite.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FE
+    000200000000000000056238 /pnfs/mysite.ch/cms/trivcat/store/phedex_monarctest/monarctest_CSCS-DISK1/LoadTest07_CSCS_FF
 
 We can use a pipe to get the cache locations from the previous command's output (the commands will ignore the second column of the input, so no need to cut the filename strings away)
 
@@ -160,8 +244,12 @@ Now we remove the files from the pool by invoking the `dc_rep_rm_list.sh` comman
 
 ## Finding and releasing hanging transfers
 
-When a pool goes down or is overloaded, it may happen that transfers get into a hanging state. This can be seen on the [Tape Transfer Queue](http://storage01.lcg.cscs.ch:2288/poolInfo/restoreHandler/*) or [Detailed Tape Transfer Queue](http://storage01.lcg.cscs.ch:2288/poolInfo/restoreHandler/lazy) web pages. In the admin interface the information can be listed by typing `rc ls` in the `PoolManager` cell. A transfer can be retried by giving the ID obtained from this listing
-to the `rc retry` command.
+When a pool goes down or is overloaded, it may happen that transfers
+get into a hanging state. This can be seen on the **Tape Transfer Queue**
+or **Detailed Tape Transfer Queue** web pages. In the admin interface the
+information can be listed by typing `rc ls` in the `PoolManager`
+cell. A transfer can be retried by giving the ID obtained from this
+listing to the `rc retry` command.
 
 The shellutils provide `dc_get_pending_requests.sh` for listing the hanging requests.
 
@@ -176,13 +264,13 @@ To retry all of these transfer, we can construct a chain with `dc_generic_cellco
     $> dc_get_pending_requests.sh |cut -f1 -d' '|dc_generic_cellcommand.sh -f -c 'rc retry $n' PoolManager
     
     
-    [storage01.lcg.cscs.ch] (local) admin > cd PoolManager
-    [storage01.lcg.cscs.ch] (PoolManager) admin > rc retry 000200000000000000D86628@0.0.0.0/0.0.0.0-*/*
-    [storage01.lcg.cscs.ch] (PoolManager) admin > rc retry 000200000000000000D77E38@0.0.0.0/0.0.0.0-*/*
+    [storage01.mysite.ch] (local) admin > cd PoolManager
+    [storage01.mysite.ch] (PoolManager) admin > rc retry 000200000000000000D86628@0.0.0.0/0.0.0.0-*/*
+    [storage01.mysite.ch] (PoolManager) admin > rc retry 000200000000000000D77E38@0.0.0.0/0.0.0.0-*/*
     ...
-    [storage01.lcg.cscs.ch] (PoolManager) admin > rc retry 000200000000000000D79E28@0.0.0.0/0.0.0.0-*/*
-    [storage01.lcg.cscs.ch] (PoolManager) admin > ..
-    [storage01.lcg.cscs.ch] (local) admin > logoff
+    [storage01.mysite.ch] (PoolManager) admin > rc retry 000200000000000000D79E28@0.0.0.0/0.0.0.0-*/*
+    [storage01.mysite.ch] (PoolManager) admin > ..
+    [storage01.mysite.ch] (local) admin > logoff
 
 Some of the transfers may remain hanging. These you can kill by `rc fail` using the same kind of construct
 
@@ -217,8 +305,10 @@ There are now two tools which do all necessary steps automatically:
 -   `dc_poolconsistency_checker.sh`: finds files with no corresponding pnfs entry and with error states.
 -   `dc_pnfs_replica_checker.sh`: checks part of the pnfs namespace or a list of pnfs names for files with no replicas.
 
-However, to illustrate how to use all the basic dcache shellutil tools, all the interactive steps are demonstrated below.
-For the pool based checks we'll use the `se03-lcg_cms` pool.
+However, to illustrate how to use all the basic dcache shellutil
+tools, all the interactive steps done by the wrappers above are
+demonstrated below.  For the pool based checks we'll use the
+`se03-lcg_cms` pool.
 
 ### Correct all the files in a pool with known error state
 
@@ -341,3 +431,16 @@ And we naturally can directly get the pnfs name mappings again using a pipe on t
     0004000000000000000B1C38 /pnfs/projects.cscs.ch/cms/local_tests/derek/LoadTest07_FZK_24
     ...
     The Shellutils can be checked out from the SVN at %SVNBASE%/d-cache/dcache-utilities/shellutils.
+
+# License
+
+These programs are free software; you can redistribute them and/or modify
+them under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+[General Public License](http://www.gnu.org/licenses/) for more
+details.

@@ -32,7 +32,7 @@ EOF
 }
 
 ##############################################################
-TEMP=`getopt -o dro: --long help -n "$myname" -- "$@"`
+TEMP=`getopt -o dhro: --long help -n "$myname" -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
