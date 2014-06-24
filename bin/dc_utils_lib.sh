@@ -40,6 +40,8 @@ if test x"$DCACHE_VERSION" != x; then
     else
 	sshoptions="-x $keyfileopt -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST"
     fi
+else
+	sshoptions="-x -2 $keyfileopt -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
 fi
 
 # returns 0 for OK, i.e. the poolname exists, otherwise 1
