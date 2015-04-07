@@ -5,7 +5,7 @@
 #
 # Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2007-08-27
 #
-# $Id$
+# $Id: dc_utils_lib.sh 2925 2010-09-01 12:40:32Z dfeich $
 #################################################################
 # 2007-08-25 Derek Feichtinger <derek.feichtinger@psi.ch>
 
@@ -32,18 +32,6 @@ if test x"$DCACHEADMIN_KEY" != x; then
     keyfileopt="-i $DCACHEADMIN_KEY"
 fi
 
-if test x"$DCACHE_VERSION" != x; then
-    majorv=$(expr $DCACHE_VERSION : '\([0-9]*\)\.')
-    minorv=$(expr $DCACHE_VERSION : '[0-9]*\.\([0-9]*\)')
-    if test $majorv -ge 2 -a $minorv -ge 2; then
-	sshoptions="-x -2 $keyfileopt -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
-    else
-	sshoptions="-x $keyfileopt -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST"
-    fi
-else
-	sshoptions="-x -2 $keyfileopt -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
-fi
-
 # returns 0 for OK, i.e. the poolname exists, otherwise 1
 check_poolname() {
     poolname=$1
@@ -56,10 +44,9 @@ check_poolname() {
 	echo "Error: Could not create a tmpfile" >&2
 	exit 1
     fi
-    # note: need to use -l which produces longer output, because
-    # dcache breaks off the connection uncleanly and short outputs are
-    # sometimes lost
-    ssh $sshoptions 2>${tmpfile}.err > $tmpfile <<EOF
+    # note: need to use -l which produces longer output, because dcache breaks off the connection uncleanly
+    # and short outputs are sometimes lost
+    ssh $keyfileopt -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST 2>${tmpfile}.err > $tmpfile <<EOF        
 cd PoolManager
 psu ls pool -l
 ..
@@ -123,32 +110,18 @@ execute_cmdfile() {
 	exit 1
     fi
 
-    # dcache ssh often shuts down the connection uncleanly... and sometimes it even closes
-    #   the connection before output has been given back, other times the output may not be complete
-    #   We test whether the final logoff command is visible in the output
-    local callok=1
-    local tries=0
-    while test $callok -ne 0; do
-       if test $tries -gt 2; then
-          echo "Error: Continual failure ($tries tries) in dc_utils.sh/execute_cmdfile to get full dcache response" >&2
-	  break
-       fi
-       ((tries=$tries+1))
-       ssh $sshoptions 2>${tmpfile}.err > $tmpfile <$cmdfile
-       egrep -q 'admin  *>  *logoff' $tmpfile
-       callok=$?
-    done
+    ssh $keyfileopt -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST 2>$errfile > $tmpfile <$cmdfile
 
-    # clean out the stupid ssh error messages about the connection break off
-    sed -i -e '/ssh.*Pseudo-terminal will not be allocated.*/d' \
-	-e '/.*Connection reset by peer/d' $errfile
-    cat $errfile >&2
     rm -f $errfile
 
     #clean out the leading ^M
     sed -i -e 's/\cM\(.*\)/\1/' $tmpfile
 
+    # remove colours
+    sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" -i $tmpfile
+
     eval $fileref=$tmpfile
+
     return 0
 }
 
