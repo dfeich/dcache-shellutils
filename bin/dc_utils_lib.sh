@@ -135,6 +135,8 @@ execute_cmdfile() {
        fi
        ((tries=$tries+1))
        ssh $sshoptions 2>${tmpfile}.err > $tmpfile <$cmdfile
+       # remove colours
+       sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" -i $tmpfile
        egrep -q 'admin  *>  *logoff' $tmpfile
        callok=$?
     done
@@ -147,6 +149,9 @@ execute_cmdfile() {
 
     #clean out the leading ^M
     sed -i -e 's/\cM\(.*\)/\1/' $tmpfile
+
+    # remove colours
+    sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" -i $tmpfile
 
     eval $fileref=$tmpfile
     return 0

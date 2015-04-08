@@ -283,9 +283,9 @@ You can list the cache locations and the names of the files using these commands
 
 ## Finding all active movers for WAN or local dcap accesses for a VO
 
-Look at the dc<sub>get</sub><sub>pool</sub><sub>movers</sub>.sh command. If we want to see all active dcap movers (default) queue:
+Look at the dc<sub>get</sub><sub>pool</sub><sub>movers</sub>.sh command. If we want to see all active dcap movers (regular) queue:
 
-    dc_get_pool_list.sh | grep cms | dc_get_pool_movers.sh -q default
+    dc_get_pool_list.sh | grep cms | dc_get_pool_movers.sh -q regular
 
 ## Finding a number of movers and selectively kill them based on which files they are accessing
 
