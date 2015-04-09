@@ -31,7 +31,7 @@
 </div>
 
 
-# Introduction
+# Introduction<a id="sec-1" name="sec-1"></a>
 
 The dCache Shellutils are a collection of shell scripts which help
 to ineract with the dcache (<http://www.dcache.org/>) storage manager.
@@ -104,7 +104,7 @@ flag, e.g.
           cat cmspools.lst | dc_get_pool_movers.sh
           dc_get_pool_list.sh | dc_get_pool_movers.sh
 
-## List of available commands
+## List of available commands<a id="sec-1-1" name="sec-1-1"></a>
 
     dc_generic_cellcommand.sh
     dc_get_active_transfers.sh
@@ -134,7 +134,7 @@ flag, e.g.
     dc_set_pools_readonly.sh
     dc_set_precious.sh
 
-# Installation and Configuration
+# Installation and Configuration<a id="sec-2" name="sec-2"></a>
 
 You must obtain passwordless SSH access to your dCache's admin
 shell.  First of all, you should deposit your public SSH key in the
@@ -162,7 +162,7 @@ In addition you may also want to define
 -   `DCACHE_VERSION`: dcache version (e.g. `2.2`). Newer versions of
     dcache allow SSH v2 access.
 
-# Some implementation details
+# Some implementation details<a id="sec-3" name="sec-3"></a>
 
 The dCache shellutils work by just piping commands via ssh to the
 dcache admin shell and then parsing the output. All use the same
@@ -182,9 +182,9 @@ Now I decided to move the sources to github, and maybe some other
 people still may be interested to use them or adapt them to their
 own style.
 
-# Examples
+# Examples<a id="sec-4" name="sec-4"></a>
 
-## Mapping a number of pnfs filenames to dCache IDs and then to cache locations on fileservers
+## Mapping a number of pnfs filenames to dCache IDs and then to cache locations on fileservers<a id="sec-4-1" name="sec-4-1"></a>
 
 Put the filenames into a file `files-pnfs.lst` , one per line (you could also pipe the list directly into the dc<sub>\*</sub> commands):
 
@@ -212,7 +212,7 @@ We can use a pipe to get the cache locations from the previous command's output 
     000200000000000000053B38 se05_cms,se06_cms
     000200000000000000056238 se06_cms
 
-## Erasing cached-only files from a pool
+## Erasing cached-only files from a pool<a id="sec-4-2" name="sec-4-2"></a>
 
 The `dc_get_rep_ls.sh` command prints out the pnfs IDs of the files in a given pool. By adding the `-r` flag (raw) one can obtain the detailed property flags for each file. Other flags allow for the filtering of the entries, e.g. `-c` for cached-only files.
 
@@ -242,7 +242,7 @@ Now we remove the files from the pool by invoking the `dc_rep_rm_list.sh` comman
 
     dc_rep_rm_list.sh se05_cms  cachedfiles.lst
 
-## Finding and releasing hanging transfers
+## Finding and releasing hanging transfers<a id="sec-4-3" name="sec-4-3"></a>
 
 When a pool goes down or is overloaded, it may happen that transfers
 get into a hanging state. This can be seen on the **Tape Transfer Queue**
@@ -281,13 +281,13 @@ You can list the cache locations and the names of the files using these commands
     $> dc_get_pending_requests.sh |cut -f1 -d'@'|dc_get_cacheinfo_from_IDlist.sh
     $> dc_get_pending_requests.sh |cut -f1 -d'@'|dc_get_pnfsname_from_IDlist.sh
 
-## Finding all active movers for WAN or local dcap accesses for a VO
+## Finding all active movers for WAN or local dcap accesses for a VO<a id="sec-4-4" name="sec-4-4"></a>
 
 Look at the dc<sub>get</sub><sub>pool</sub><sub>movers</sub>.sh command. If we want to see all active dcap movers (regular) queue:
 
     dc_get_pool_list.sh | grep cms | dc_get_pool_movers.sh -q regular
 
-## Finding a number of movers and selectively kill them based on which files they are accessing
+## Finding a number of movers and selectively kill them based on which files they are accessing<a id="sec-4-5" name="sec-4-5"></a>
 
 `dc_get_pool_movers.sh` offers a `-k` flag which will produce output containing one more column with the pnfs mapped filename 
 
@@ -299,9 +299,10 @@ This file format can be directly used as an argument for the `dc_kill_pool_mover
 
     dc_get_pool_list.sh | grep cms | dc_get_pool_movers.sh -k | grep "/store/user/somename"| dc_kill_pool_movers.sh
 
-## Consistency checks
+## Consistency checks<a id="sec-4-6" name="sec-4-6"></a>
 
 There are now two tools which do all necessary steps automatically:
+
 -   `dc_poolconsistency_checker.sh`: finds files with no corresponding pnfs entry and with error states.
 -   `dc_pnfs_replica_checker.sh`: checks part of the pnfs namespace or a list of pnfs names for files with no replicas.
 
@@ -310,7 +311,7 @@ tools, all the interactive steps done by the wrappers above are
 demonstrated below.  For the pool based checks we'll use the
 `se03-lcg_cms` pool.
 
-### Correct all the files in a pool with known error state
+### Correct all the files in a pool with known error state<a id="sec-4-6-1" name="sec-4-6-1"></a>
 
 We need to get the list of pool files with recognized error states (i.e. the pool can detect the problem by itself).
 Specifying the `-r` flag to the script would print the raw details
@@ -356,7 +357,7 @@ For safety reasons I redirected the list to the `toremove.lst` file. Now we can 
     dc_rep_rm_list.sh -f se03-lcg_cms toremove.lst
     The Shellutils can be checked out from the SVN at %SVNBASE%/d-cache/dcache-utilities/shellutils.
 
-### Locate a pool's files with no pnfs entries
+### Locate a pool's files with no pnfs entries<a id="sec-4-6-2" name="sec-4-6-2"></a>
 
 This is similar to the previous procedure. We first get a list of all IDs in that pool:
 
@@ -394,7 +395,7 @@ So, 799 files are not connected to any logical filenames, and therefore can be e
     dc_rep_rm_list.sh -f se03-lcg_cms toremove.lst
     The Shellutils can be checked out from the SVN at %SVNBASE%/d-cache/dcache-utilities/shellutils.
 
-### Find files with no replicates
+### Find files with no replicates<a id="sec-4-6-3" name="sec-4-6-3"></a>
 
 Usually, we will do this for a certain data set, so we need a list of the pnfs filenames belonging to that set. In CMS a data sets always can be found under a specific directory tree, so it is fairly easy to get a list using a `find` command with the respective path.
 For this example I use our local test area instead of the set, because I know that there are a few problematic files.
@@ -432,7 +433,7 @@ And we naturally can directly get the pnfs name mappings again using a pipe on t
     ...
     The Shellutils can be checked out from the SVN at %SVNBASE%/d-cache/dcache-utilities/shellutils.
 
-# License
+# License<a id="sec-5" name="sec-5"></a>
 
 These programs are free software; you can redistribute them and/or modify
 them under the terms of the GNU General Public License as published by

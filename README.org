@@ -13,6 +13,10 @@
 #+LANGUAGE: en
 #+SELECT_TAGS: export
 
+* COMMENT About this document
+  This is the source for the markdown README.md file. The markdown
+  file is created from it by running the =org-md-export-to-markdown= command.
+
 * Introduction
   The dCache Shellutils are a collection of shell scripts which help
   to ineract with the dcache (http://www.dcache.org/) storage manager.
@@ -284,10 +288,10 @@ $> dc_get_pending_requests.sh |cut -f1 -d'@'|dc_get_pnfsname_from_IDlist.sh
 
 ** Finding all active movers for WAN or local dcap accesses for a VO
 
-Look at the dc_get_pool_movers.sh command. If we want to see all active dcap movers (default) queue:
+Look at the dc_get_pool_movers.sh command. If we want to see all active dcap movers (regular) queue:
 
 #+BEGIN_EXAMPLE
-dc_get_pool_list.sh | grep cms | dc_get_pool_movers.sh -q default
+dc_get_pool_list.sh | grep cms | dc_get_pool_movers.sh -q regular
 #+END_EXAMPLE
 
 ** Finding a number of movers and selectively kill them based on which files they are accessing
@@ -460,3 +464,8 @@ The Shellutils can be checked out from the SVN at %SVNBASE%/d-cache/dcache-utili
   [[http://www.gnu.org/licenses/][General Public License]] for more
   details.
 
+* COMMENT org configuration
+Local Variables:
+org-confirm-babel-evaluate: t
+org-export-babel-evaluate: nil
+End:
