@@ -16,7 +16,7 @@ usage(){
 Synopsis: 
       dc_kill_pool_movers.sh [options] listfile
 Options:
-      -b       :   force. Do not prompt for execution
+      -f       :   force. Do not prompt for execution
 
 Description:
       Kills the movers on the respective pool cells. The listfile must contain
@@ -93,7 +93,7 @@ while read pool moverid crap; do
    cat >> $cmdfile <<EOF
 ..
 cd $pool
-mover kill $moverid
+mover kill $moverid -force
 EOF
 done < $listfile
 
