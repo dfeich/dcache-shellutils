@@ -102,12 +102,12 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "cd $poolnameDST" >> $cmdfile
+echo "\c $poolnameDST" >> $cmdfile
 for n in `cat $listfile| cut -f1 -d " "`; do
     echo "pp get file $n $poolnameSRC" >> $cmdfile
 done
-echo ".." >> $cmdfile
-echo "logoff" >> $cmdfile
+echo "\q" >> $cmdfile
+
 
 execute_cmdfile $force $cmdfile retfile
 toremove="$toremove $retfile"

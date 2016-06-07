@@ -32,17 +32,8 @@ if test x"$DCACHEADMIN_KEY" != x; then
     keyfileopt="-i $DCACHEADMIN_KEY"
 fi
 
-if test x"$DCACHE_VERSION" != x; then
-    majorv=$(expr $DCACHE_VERSION : '\([0-9]*\)\.')
-    minorv=$(expr $DCACHE_VERSION : '[0-9]*\.\([0-9]*\)')
-    if test $majorv -ge 2 -a $minorv -ge 2; then
-	sshoptions="-x -2 $keyfileopt -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
-    else
-	sshoptions="-x $keyfileopt -T -l admin -c blowfish -p $DCACHEADMINPORT $DCACHEADMINHOST"
-    fi
-else
-	sshoptions="-x -2 $keyfileopt -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
-fi
+# Since 2.10 and above ; it makes no sense to support older releases
+sshoptions=" -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
 
 # returns 0 for OK, i.e. the poolname exists, otherwise 1
 check_poolname() {
@@ -60,10 +51,7 @@ check_poolname() {
     # dcache breaks off the connection uncleanly and short outputs are
     # sometimes lost
     ssh $sshoptions 2>${tmpfile}.err > $tmpfile <<EOF
-cd PoolManager
-psu ls pool -l
-..
-logoff
+\s PoolManager psu ls pool -l
 EOF
     #if test $? != 0; then
     #   echo "Error: check_poolname() error in ssh connection" >&2
@@ -100,6 +88,13 @@ execute_cmdfile() {
 	exit 1
     fi
 
+    # You can enable this to be sure that all the output was emitted
+    #echo "\s System say COMPLETE_SSH_OUTPUT_EMITTED" >> $cmdfile
+    
+    # To Debug which commands are going to be executed
+    #echo
+    #cat $cmdfile
+    #echo
 
     if test x"$force" != x1; then
 	cat $cmdfile >&2
@@ -137,7 +132,7 @@ execute_cmdfile() {
        ssh $sshoptions 2>${tmpfile}.err > $tmpfile <$cmdfile
        # remove colours
        sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" -i $tmpfile
-       egrep -q 'admin  *>  *logoff' $tmpfile
+       #egrep -q 'admin  *>  *logoff' $tmpfile
        callok=$?
     done
 

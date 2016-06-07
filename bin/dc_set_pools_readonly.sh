@@ -100,12 +100,12 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "cd PoolManager" >>$cmdfile
+echo "\c PoolManager" >>$cmdfile
 for n in `cat $listfile`;do
     echo "psu set pool $n $option" >>$cmdfile
 done
-echo ".." >>$cmdfile
-echo "logoff" >>$cmdfile
+echo "\q" >>$cmdfile
+
 toremove="$toremove $cmdfile"
 
 execute_cmdfile $force $cmdfile retfile

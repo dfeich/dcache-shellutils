@@ -123,10 +123,9 @@ for pool in `cat $listfile`; do
        exit 1
    fi
    cat >> $cmdfile <<EOF
-cd $pool
+\c $pool
 mover ls $qstr
-..
-logoff
+\q
 EOF
    if test x"$debug" = x1; then
       cat $cmdfile >&2

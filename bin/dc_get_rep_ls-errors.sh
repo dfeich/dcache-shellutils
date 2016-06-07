@@ -50,10 +50,9 @@ if test $? -ne 0; then
     exit 1
 fi
 cat > $cmdfile <<EOF
-cd $poolname
+\c $poolname
 rep ls -l=e
-..
-logoff
+\q
 EOF
 
 execute_cmdfile -f $cmdfile retfile

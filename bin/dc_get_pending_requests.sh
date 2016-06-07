@@ -38,19 +38,16 @@ if test $? -ne 0; then
 fi
 
 cat > $cmdfile <<EOF
-cd PoolManager
-rc ls
-..
-logoff
+\s PoolManager rc ls
 EOF
 
 execute_cmdfile -f $cmdfile retfile
 rm -f $cmdfile
 
-if test x"$opt" = x; then
-   #sed -i -e '/(.*) admin/d' -e '/^ *$/d' $retfile
-   sed -i -e '/(.*) admin/d' -e '/^ *$/d' -e '/Admin/d' -e '/^dmg/d' $retfile
-fi
+#if test x"$opt" = x; then
+#   #sed -i -e '/(.*) admin/d' -e '/^ *$/d' $retfile
+#   sed -i -e '/(.*) admin/d' -e '/^ *$/d' -e '/Admin/d' -e '/^dmg/d' $retfile
+#fi
 
 cat $retfile
 rm -f $retfile

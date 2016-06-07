@@ -91,14 +91,13 @@ while read pool moverid crap; do
        exit 1
    fi
    cat >> $cmdfile <<EOF
-..
-cd $pool
+\c $pool
 mover kill $moverid -force
 EOF
 done < $listfile
 
-echo ".." >>$cmdfile
-echo "logoff" >>$cmdfile
+echo "\q" >>$cmdfile
+
 
 #cat $cmdfile
 execute_cmdfile $force $cmdfile resfile

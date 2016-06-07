@@ -142,18 +142,16 @@ option=" -l=$lopt"
 if test x"$listfile" = x; then
    cat > $cmdfile <<EOF
 set timeout 120
-cd $poolname
+\c $poolname
 rep ls$option
-..
-logoff
+\q
 EOF
 else
-   echo "cd $poolname" >> $cmdfile
+   echo "\c $poolname" >> $cmdfile
    for n in `cat $listfile`; do
       echo "rep ls $n" >> $cmdfile
    done
-   echo ".." >> $cmdfile
-   echo "logoff" >> $cmdfile
+   echo "\q" >> $cmdfile
 fi
 
 execute_cmdfile -f $cmdfile resfile

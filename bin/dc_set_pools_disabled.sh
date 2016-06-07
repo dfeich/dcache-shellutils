@@ -37,12 +37,11 @@ if test $? -ne 0; then
 fi
 
 for n in `cat $listfile`;do
-    echo "cd $n" >>$cmdfile
+    echo "\c $n" >>$cmdfile
     echo "pool $option" >>$cmdfile
-    echo ".." >>$cmdfile
 done
-echo ".." >>$cmdfile
-echo "logoff" >>$cmdfile
+echo "\q" >>$cmdfile
+
 
 execute_cmdfile $cmdfile retfile
 rm -f $cmdfile

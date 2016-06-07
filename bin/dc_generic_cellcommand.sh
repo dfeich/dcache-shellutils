@@ -106,15 +106,14 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "cd $cell" > $cmdfile
+echo "\c $cell" > $cmdfile
 for n in `cat $listfile`; do
     tmp=`eval echo $command`
     echo $tmp >> $cmdfile
 done
 
 cat >> $cmdfile <<EOF
-..
-logoff
+\q
 EOF
 toremove="$toremove $cmdfile"
 

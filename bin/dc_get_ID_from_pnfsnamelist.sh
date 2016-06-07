@@ -51,47 +51,49 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "cd PnfsManager" >>$cmdfile
-for n in `cat $listfile|cut -f1 -d' '`;do
-    echo "pnfsidof $n" >>$cmdfile
+echo "\c PnfsManager"  >> $cmdfile
+for n in `cat $listfile|cut -f1 -d' '` ; do
+    echo "pnfsidof $n" >> $cmdfile
 done
-echo ".." >>$cmdfile
-echo "logoff" >>$cmdfile
+echo "\q"              >> $cmdfile
+
 toremove="$toremove $cmdfile"
 
 execute_cmdfile -f $cmdfile resfile
 
-sed -i -ne '/^0[0-9A-Z]*\|pnfsidof/p' $resfile
+#sed -i -ne '/^0[0-9A-Z]*\|pnfsidof/p' $resfile
 #sed -i -e 's/.*pnfsidof *\(\/pnfs\/[^ ]*\)/\1/' $resfile
 toremove="$toremove $resfile"
 
-# collect id and pnfs filename pairs
-state=pnfs
-while read line
-do
-  a=$(expr "$line" : '.*admin  *>  *pnfsidof  *\(.*\)')
-  if test x"$a" != x; then
-      if test $state = id; then
-	  echo "Error:Missing $name"
-      fi
-      name=$a
-      state=id
-  elif test $state = id; then
-      findfail=$(expr "$line" : '.*pnfsidof failed.*not found')
-      if test 0$findfail -gt 0; then
-         line="Error:Missing"
-      fi
-      echo "$line $name"
-      state=pnfs
-  else
-      echo "ERROR:state=$state  namematch=$a  line=$line" >&2
-      rm -f $toremove
-      exit
-  fi
-done < $resfile
-# print the last incomplete entry
-if test $state = id; then
-    echo "Error:Missing $name"
-fi
-
+paste $resfile $listfile | awk '{ print $1,$2 }'
+#  
+#  # collect id and pnfs filename pairs
+#  state=pnfs
+#  while read line
+#  do
+#    a=$(expr "$line" : '.*admin  *>  *pnfsidof  *\(.*\)')
+#    if test x"$a" != x; then
+#        if test $state = id; then
+#  	  echo "Error:Missing $name"
+#        fi
+#        name=$a
+#        state=id
+#    elif test $state = id; then
+#        findfail=$(expr "$line" : '.*pnfsidof failed.*not found')
+#        if test 0$findfail -gt 0; then
+#           line="Error:Missing"
+#        fi
+#        echo "$line $name"
+#        state=pnfs
+#    else
+#        echo "ERROR:state=$state  namematch=$a  line=$line" >&2
+#        rm -f $toremove
+#        exit
+#    fi
+#  done < $resfile
+#  # print the last incomplete entry
+#  if test $state = id; then
+#      echo "Error:Missing $name"
+#  fi
+#  
 rm -f $toremove
