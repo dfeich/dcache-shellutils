@@ -41,13 +41,19 @@
   
 
   #+BEGIN_EXAMPLE
-dc_get_ID_from_pnfsnamelist.sh files-pnfs.lst |dc_get_cacheinfo_from_IDlist.sh
+dc_get_ID_from_pnfsnamelist.sh files-pnfs.lst | dc_get_cacheinfo_from_IDlist_or_PNFSlist.sh
 
 000200000000000000048010 se05_cms
 00020000000000000004BE80 se07_cms,se02_cms
 00020000000000000004DE88 se05_cms
 000200000000000000053B38 se05_cms,se06_cms
 000200000000000000056238 se06_cms
+  #+END_EXAMPLE
+
+  Nowadays with dCache 2.15 and above we can get the same result directly by :
+
+  #+BEGIN_EXAMPLE
+dc_get_cacheinfo_from_IDlist_or_PNFSlist.sh files-pnfs.lst
   #+END_EXAMPLE
 
   Or another example, where the first command in the chain gets a list
@@ -87,7 +93,7 @@ Description:
 
 Examples:
       dc_get_pool_movers.sh cmspools.lst
-      cat cmspools.lst | dc_get_pool_movers.sh
+      cat cmspools.lst    | dc_get_pool_movers.sh
       dc_get_pool_list.sh | dc_get_pool_movers.sh
 #+END_EXAMPLE
 
@@ -101,7 +107,7 @@ Examples:
   #+begin_example
   dc_generic_cellcommand.sh
   dc_get_active_transfers.sh
-  dc_get_cacheinfo_from_IDlist.sh
+  dc_get_cacheinfo_from_IDlist_or_PNFSlist.sh
   dc_get_CopyManager_errors.sh
   dc_get_ID_from_pnfsnamelist.sh
   dc_get_pending_requests.sh
@@ -112,7 +118,7 @@ Examples:
   dc_get_rep_ls-errors.sh
   dc_get_rep_ls.sh
   dc_get_routes.sh
-  dc_get_storageinfo_from_IDlist.sh
+  dc_get_storageinfo_from_IDlist_or_PNFSlist.sh
   dc_get_usermapping.sh
   dc_kill_pool_movers.sh
   dc_listFilesinSpace.sh
@@ -132,13 +138,12 @@ Examples:
 
   You must obtain passwordless SSH access to your dCache's admin
   shell.  First of all, you should deposit your public SSH key in the
-  appropriate =/opt/d-cache/config/authorized_keys= (dcache versions
-  < 2) or =/etc/dcache/admin/authorized_keys2= (dcache versions > 2)
-  file on the node running the admin shell service. *IMPORTANT*: The
-  =name tag= (last field of the key line) must be changed to =admin=
-  (though this seems no longer required in the newer dcache versions)!
-  This will allow you to connect without having to type a password
-  every time.
+  appropriate file =/etc/dcache/admin/authorized_keys2= on the node 
+  running the admin shell service. 
+  *IMPORTANT*: The =name tag= (last field of the key line) must be 
+  changed to =admin= (though this seems no longer required in the 
+  newer dcache versions)! This will allow you to connect without 
+  having to type a password every time.
 
   Define the following three environment variables in your shell
   environment:
@@ -151,8 +156,8 @@ Examples:
   In addition you may also want to define
   - =DCACHEADMIN_KEY=: location of an ssh keyfile for accessing the
     dcache admin shell (if not found in the default location)
-  - =DCACHE_VERSION=: dcache version (e.g. =2.2=). Newer versions of
-    dcache allow SSH v2 access.
+  - =DCACHE_VERSION=: dcache version (e.g. =2.15=). Latest versions of
+    dcache allow only SSH v2 access.
 
 * Some implementation details
 
@@ -198,13 +203,20 @@ $> dc_get_ID_from_pnfsnamelist.sh files-pnfs.lst
 We can use a pipe to get the cache locations from the previous command's output (the commands will ignore the second column of the input, so no need to cut the filename strings away)
 
 #+BEGIN_EXAMPLE
-dc_get_ID_from_pnfsnamelist.sh files-pnfs.lst |dc_get_cacheinfo_from_IDlist.sh
+dc_get_ID_from_pnfsnamelist.sh files-pnfs.lst | dc_get_cacheinfo_from_IDlist_or_PNFSlist.sh
 000200000000000000048010 se05_cms
 00020000000000000004BE80 se07_cms,se02_cms
 00020000000000000004DE88 se05_cms
 000200000000000000053B38 se05_cms,se06_cms
 000200000000000000056238 se06_cms
 #+END_EXAMPLE
+
+We can also directly get the same result by :
+#+BEGIN_EXAMPLE
+dc_get_cacheinfo_from_IDlist_or_PNFSlist.sh files-pnfs.lst
+#+END_EXAMPLE
+
+Case by case your input might be a list of IDs or a list of PNFSs
 
 ** Erasing cached-only files from a pool
 
@@ -225,7 +237,7 @@ The Shellutils can be checked out from the SVN at %SVNBASE%/d-cache/dcache-utili
 
 You may wish to double check whether indeed all these files have multiple copies on the cluster, by finding the cache locations of all files
 #+BEGIN_EXAMPLE
-dc_get_cacheinfo_from_IDlist.sh cachedfiles.lst
+dc_get_cacheinfo_from_IDlist_or_PNFSlist.sh cachedfiles.lst
 
 00006D0A348BF472498D98DC2320368F1ABB se05_cms,se30_cms                                                                 
 0000A1DF66B86A5D45D49183FF44414B5188 se05_cms,se21_cms,se33_cms                                                        
@@ -262,13 +274,12 @@ To retry all of these transfer, we can construct a chain with =dc_generic_cellco
 $> dc_get_pending_requests.sh |cut -f1 -d' '|dc_generic_cellcommand.sh -f -c 'rc retry $n' PoolManager
 
 
-[storage01.mysite.ch] (local) admin > cd PoolManager
+[storage01.mysite.ch] (local) admin > \c PoolManager
 [storage01.mysite.ch] (PoolManager) admin > rc retry 000200000000000000D86628@0.0.0.0/0.0.0.0-*/*
 [storage01.mysite.ch] (PoolManager) admin > rc retry 000200000000000000D77E38@0.0.0.0/0.0.0.0-*/*
 ...
 [storage01.mysite.ch] (PoolManager) admin > rc retry 000200000000000000D79E28@0.0.0.0/0.0.0.0-*/*
-[storage01.mysite.ch] (PoolManager) admin > ..
-[storage01.mysite.ch] (local) admin > logoff
+[storage01.mysite.ch] (PoolManager) admin > \q
 #+END_EXAMPLE
 
 Some of the transfers may remain hanging. These you can kill by =rc fail= using the same kind of construct
@@ -278,7 +289,7 @@ $> dc_get_pending_requests.sh |cut -f1 -d' '|dc_generic_cellcommand.sh -d -f -c 
 
 You can list the cache locations and the names of the files using these commands
 #+BEGIN_EXAMPLE
-$> dc_get_pending_requests.sh |cut -f1 -d'@'|dc_get_cacheinfo_from_IDlist.sh
+$> dc_get_pending_requests.sh |cut -f1 -d'@'|dc_get_cacheinfo_from_IDlist_or_PNFSlist.sh
 $> dc_get_pending_requests.sh |cut -f1 -d'@'|dc_get_pnfsname_from_IDlist.sh
 #+END_EXAMPLE
 
