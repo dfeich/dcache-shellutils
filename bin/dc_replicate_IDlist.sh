@@ -197,7 +197,7 @@ echo "" > $cmdfile
 prevdstpool=""
 while read dstpool srcpool id; do
    if test x"$dstpool" != x"$prevdstpool"; then
-      echo -e "..\n\c $dstpool"    >> $cmdfile
+      echo -e "\n\c $dstpool"    >> $cmdfile
    fi
    srcpool=`echo $srcpool|cut -f 1 -d","`
    echo "pp get file $id $srcpool" >> $cmdfile
