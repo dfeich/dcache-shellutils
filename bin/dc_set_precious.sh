@@ -90,3 +90,6 @@ execute_cmdfile $force $cmdfile resfile
 toremove="$toremove $resfile"
 
 rm -f $toremove
+
+
+# PRECIOUS means "must go to tape"

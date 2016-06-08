@@ -132,6 +132,7 @@ Examples:
   dc_set_pools_disabled.sh
   dc_set_pools_readonly.sh
   dc_set_precious.sh
+  dc_set_sticky.sh
 #+end_example
 
 * Installation and Configuration
