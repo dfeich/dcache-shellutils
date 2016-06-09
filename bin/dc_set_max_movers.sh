@@ -101,12 +101,10 @@ fi
 toremove="$toremove $cmdfile"
 
 for n in `cat $listfile`;do
-    echo ".." >>$cmdfile
-    echo "cd $n" >>$cmdfile
+    echo "\c $n" >>$cmdfile
     echo "mover set max active ${value}${option}" >>$cmdfile
 done
-echo ".." >>$cmdfile
-echo "logoff" >>$cmdfile
+echo "\q" >>$cmdfile
 
 if test $flag_dbg -ne 1; then
    force="-f"

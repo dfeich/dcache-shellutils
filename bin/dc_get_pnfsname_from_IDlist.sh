@@ -49,43 +49,43 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "cd PnfsManager" >>$cmdfile
-for n in `cat $listfile| cut -f1 -d " "`;do
+echo "\c PnfsManager" >>$cmdfile
+for n in `awk '{ print $1 }' $listfile`;do
     echo "pathfinder $n" >>$cmdfile
 done
-echo ".." >>$cmdfile
-echo "logoff" >>$cmdfile
+echo "\q"     >>$cmdfile
 
 toremove="$toremove $cmdfile"
 execute_cmdfile -f $cmdfile resfile
 
-sed -i -ne '/\/pnfs\/\|pathfinder 0/p' $resfile
-sed -i -e 's/.*pathfinder *\(0[0-9A-Z]*\)/\1/' $resfile
+#sed -i -ne '/\/pnfs\/\|pathfinder 0/p' $resfile
+#sed -i -e 's/.*pathfinder *\(0[0-9A-Z]*\)/\1/' $resfile
 toremove="$toremove $resfile"
 
-# collect id and pnfs filename pairs
-state=id
-while read line
-do
-  a=$(expr "$line" : '00[0-9A-Z]*')
-  if test 0$a -gt 0; then
-      if test $state = pnfs; then
-	  echo "$id Error:Missing"
-      fi
-      id=$line
-      state=pnfs
-  elif test $state = pnfs; then
-      echo "$id $line"
-      state=id
-  else
-      echo "ERROR:state=$state   line=$line" >&2
-      rm -f $toremove
-      exit
-  fi
-done < $resfile
-# print the last incomplete entry
-if test $state = pnfs; then
-    echo "$id Error:Missing"
-fi
+paste $listfile $resfile | awk {' print$1,$2}'
+#  # collect id and pnfs filename pairs
+#  state=id
+#  while read line
+#  do
+#    a=$(expr "$line" : '00[0-9A-Z]*')
+#    if test 0$a -gt 0; then
+#        if test $state = pnfs; then
+#  	  echo "$id Error:Missing"
+#        fi
+#        id=$line
+#        state=pnfs
+#    elif test $state = pnfs; then
+#        echo "$id $line"
+#        state=id
+#    else
+#        echo "ERROR:state=$state   line=$line" >&2
+#        rm -f $toremove
+#        exit
+#    fi
+#  done < $resfile
+#  # print the last incomplete entry
+#  if test $state = pnfs; then
+#      echo "$id Error:Missing"
+#  fi
 
 rm -f $toremove

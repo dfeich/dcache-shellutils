@@ -9,7 +9,7 @@
 #################################################################
 
 myname=$(basename $0)
-domain="dCacheDomain"
+domain="System@dCacheDomain"
 mode="route"
 
 usage() {
@@ -75,14 +75,13 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "cd /$domain" >> $cmdfile
+echo "\c $domain" >> $cmdfile
 if test x"$mode" = xps; then
    echo "ps -ef" >> $cmdfile
 else
    echo "route" >> $cmdfile
 fi
-echo ".." >> $cmdfile
-echo "logoff" >> $cmdfile
+echo "\q" >> $cmdfile
 
 execute_cmdfile -f $cmdfile retfile
 toremove="$toremove $retfile"

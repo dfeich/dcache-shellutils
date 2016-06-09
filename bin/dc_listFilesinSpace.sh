@@ -42,10 +42,9 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "cd SrmSpaceManager" >>$cmdfile
+echo "\c SrmSpaceManager"     >>$cmdfile
 echo "listFilesInSpace $stID" >>$cmdfile
-echo ".." >>$cmdfile
-echo "logoff" >>$cmdfile
+echo "\q"                     >>$cmdfile
 
 toremove="$toremove $cmdfile"
 execute_cmdfile -f $cmdfile resfile

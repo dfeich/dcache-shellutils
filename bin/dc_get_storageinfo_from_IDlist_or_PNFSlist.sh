@@ -16,9 +16,8 @@ usage() {
 Synopsis:
           $myname listfile
 Description:
-          The listfile must contain a list of pnfsIDs for which
-          the storage info entries will be retrieved
-          If listfile is omitted, the input will be read from stdin
+          The listfile must contain either a list of pnfsIDs or pnfsNAMEs for which
+          the storage info entries will be retrieved. If listfile is omitted, the input will be read from stdin
 
 EOF
 }
@@ -56,12 +55,12 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "cd PnfsManager" >>$cmdfile
+echo "\c PnfsManager" >>$cmdfile
 for n in `cat $listfile | cut -f1 -d " "`;do
     echo "storageinfoof $n" >>$cmdfile
 done
-echo ".." >>$cmdfile
-echo "logoff" >>$cmdfile
+echo "\q" >>$cmdfile
+
 toremove="$toremove $cmdfile"
 
 execute_cmdfile -f $cmdfile resfile
@@ -75,25 +74,29 @@ if test $flag_raw -eq 1; then
    #exit 0
 fi
 
-# collect id and info on single lines
-state=id
-cat $resfile|while read line
-do
-   if test $state = id; then
-      a=$(expr "$line" : '00[0-9A-Z]*')
-      if test 0$a -gt 0; then
-	 id=$line
-	 state=storageinfo
-      fi
-   elif test $state = storageinfo; then
-      #line=$(echo $line|sed -e 's/ /,/g')
-      a=$(expr "$line" : '.*storageinfoof failed : path .* not found')
-      if test 0$a -gt 0; then
-         line="Error:Missing"
-      fi
-      echo "$id $line"
-      state=id
-   fi
-done
+# remove empty lines
+sed '/^\s*$/d' -i $resfile
+
+paste $listfile $resfile | awk {' print$1,$2}'
+# # collect id and info on single lines
+# state=id
+# cat $resfile|while read line
+# do
+#    if test $state = id; then
+#       a=$(expr "$line" : '00[0-9A-Z]*')
+#       if test 0$a -gt 0; then
+# 	 id=$line
+# 	 state=storageinfo
+#       fi
+#    elif test $state = storageinfo; then
+#       #line=$(echo $line|sed -e 's/ /,/g')
+#       a=$(expr "$line" : '.*storageinfoof failed : path .* not found')
+#       if test 0$a -gt 0; then
+#          line="Error:Missing"
+#       fi
+#       echo "$id $line"
+#       state=id
+#    fi
+# done
 
 rm -f $toremove

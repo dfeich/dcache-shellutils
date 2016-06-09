@@ -86,10 +86,9 @@ if test $? -ne 0; then
 fi
 
 cat > $cmdfile <<EOF
-cd PoolManager
+\c PoolManager
 psu ls pool -l
-..
-logoff
+\q
 EOF
 
 toremove="$toremove $cmdfile"

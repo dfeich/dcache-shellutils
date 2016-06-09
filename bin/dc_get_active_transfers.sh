@@ -59,10 +59,8 @@ if test $? -ne 0; then
     exit 1
 fi
 cat >> $cmdfile <<EOF
-cd TransferObserver
-ls iolist
-..
-logoff
+\s httpdTransferObserver@* ls iolist
+\q
 EOF
 if test x"$debug" = x1; then
     cat $cmdfile >&2
@@ -80,7 +78,7 @@ execute_cmdfile -f $cmdfile resfile
 
 # clean up starter and end lines
 sed -i -e '/^\[.*\]/d' -e '/^ *dCache Admin.*/d' -e '/^ *$/d' -e '/^ *\r *$/d' $resfile
-cat $resfile
+grep -v ^httpdTransferObserver@ $resfile
 
 rm -f $toremove
 

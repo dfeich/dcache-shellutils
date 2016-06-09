@@ -101,12 +101,12 @@ if test $? -ne 0; then
 fi
 toremove="$toremove $cmdfile"
 
-echo "cd $poolname" >>$cmdfile
+echo "\c $poolname" >>$cmdfile
 for n in `cat $listfile|awk '{print $1}'`;do
     echo "rep rm $n$force" >>$cmdfile
 done
-echo ".." >>$cmdfile
-echo "logoff" >>$cmdfile
+echo "\q" >>$cmdfile
+
 
 execute_cmdfile $yes $cmdfile retfile
 toremove="$toremove $retfile"

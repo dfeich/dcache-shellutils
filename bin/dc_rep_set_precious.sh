@@ -46,12 +46,11 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "cd $poolname" >>$cmdfile
+echo "\c $poolname" >>$cmdfile
 for n in `cat $listfile`;do
     echo "rep set precious $n$force" >>$cmdfile
 done
-echo ".." >>$cmdfile
-echo "logoff" >>$cmdfile
+echo "\q" >>$cmdfile
 
 execute_cmdfile $cmdfile retfile
 rm -f $cmdfile

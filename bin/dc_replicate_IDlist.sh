@@ -8,7 +8,7 @@
 # $Id$
 #################################################################
 
-myname==$(basename $0)
+myname=$(basename $0)
 
 # DEFAULTS
 dbg=0
@@ -197,7 +197,7 @@ echo "" > $cmdfile
 prevdstpool=""
 while read dstpool srcpool id; do
    if test x"$dstpool" != x"$prevdstpool"; then
-      echo -e "..\ncd $dstpool" >> $cmdfile
+      echo -e "\n\c $dstpool"    >> $cmdfile
    fi
    srcpool=`echo $srcpool|cut -f 1 -d","`
    echo "pp get file $id $srcpool" >> $cmdfile
@@ -205,8 +205,7 @@ while read dstpool srcpool id; do
 done < $tmpfile
 
 cat >> $cmdfile <<EOF
-..
-logoff
+\q
 EOF
 
 execute_cmdfile $force $cmdfile resfile

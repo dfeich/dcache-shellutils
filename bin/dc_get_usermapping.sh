@@ -79,14 +79,18 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "cd gPlazma" >> $cmdfile
-echo "get mapping \"$certdn\" \"$vomsfqan\"" >> $cmdfile
-echo ".." >> $cmdfile
-echo "logoff" >> $cmdfile
+# [t3dcachedb03] (gPlazma@t3dcachedb03-Domain-gPlazma) admin > test login dn:"/DC=EU/DC=EGI/C=CH/O=People/O=Paul-Scherrer-Institut (PSI)/CN=Fabio Martinelli" fqan:"/cms/"
+# Login[martinelli_f,2980:[500],[HomeDirectory[/], RootDirectory[/]]]
+
+cat > $cmdfile <<EOF
+\c gPlazma
+test login dn:"${certdn}" fqan:"${vomsfqan}"
+\q
+EOF
 
 execute_cmdfile -f $cmdfile retfile
 toremove="$toremove $retfile"
 
-cat $retfile | egrep "mapped as|Cannot determine"
+egrep -i login $retfile
 
 rm -f $toremove
