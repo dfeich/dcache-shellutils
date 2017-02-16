@@ -19,7 +19,7 @@ Synopsis:
 
 Options:
          -d          : cell domain name [$domain]
-         -p          : display "ps -ef" cell list instead of routes
+         -p          : display "ps -f" cell list instead of routes
          -h/--help   : this help text
 
 Description:
@@ -77,7 +77,7 @@ fi
 
 echo "\c $domain" >> $cmdfile
 if test x"$mode" = xps; then
-   echo "ps -ef" >> $cmdfile
+   echo "ps -f" >> $cmdfile
 else
    echo "route" >> $cmdfile
 fi
