@@ -1,15 +1,15 @@
 #!/bin/bash
 
 #################################################################
-# dc_get_routes.sh
+# dc_get_cells.sh
 #
-# Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2008-03-04
+# Author: Derek Feichtinger <derek.feichtinger@psi.ch> 2020-04-14
 #
-# $Id$
 #################################################################
 
 myname=$(basename $0)
 domain="System@dCacheDomain"
+filter=""
 mode="route"
 
 usage() {
@@ -18,22 +18,18 @@ Synopsis:
           $myname
 
 Options:
-         -d          : cell domain name [$domain]
-         -p          : display "ps -f" cell list instead of routes
+         -f          : filter for cell names
          -h/--help   : this help text
 
 Description:
-          By default, this command will show all the defined routes of
-          a domain (obtained by running "route" in the domain).
-          If the -p flag is specified, the output of "ps -ef" is used
-          instead
-
+	 Shows the well defined cells
+         (corresponds to \l command in admin shell)
 EOF
 }
 
 
 ##############################################################
-TEMP=`getopt -o d:hp --long help -n "$myname" -- "$@"`
+TEMP=`getopt -o f:h --long help -n "$myname" -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -44,15 +40,11 @@ while true; do
             usage
             exit 0
             ;;
-       -d)
-            domain=$2
+	-f)
+            filter=$2
             shift 2
             ;;
-       -p)
-            mode="ps"
-            shift
-            ;;
-        --)
+	--)
             shift;
             break;
             ;;
@@ -67,7 +59,7 @@ done
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
 
-cmdfile=`mktemp /tmp/get_route-$USER.XXXXXXXX`
+cmdfile=`mktemp /tmp/get_cells-$USER.XXXXXXXX`
 toremove="$toremove $cmdfile"
 if test $? -ne 0; then
     echo "Error: Could not create a cmdfile" >&2
@@ -75,18 +67,12 @@ if test $? -ne 0; then
     exit 1
 fi
 
-echo "\c $domain" >> $cmdfile
-if test x"$mode" = xps; then
-   echo "ps -f" >> $cmdfile
-else
-   echo "route" >> $cmdfile
-fi
+echo "\l $filter" >> $cmdfile
 echo "\q" >> $cmdfile
 
 execute_cmdfile -f $cmdfile retfile
 toremove="$toremove $retfile"
 
-cat $retfile
-echo
+cat $retfile |  sed '/^[[:space:]]*$/d'
 
 rm -f $toremove
