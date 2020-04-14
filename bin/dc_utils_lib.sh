@@ -32,8 +32,16 @@ if test x"$DCACHEADMIN_KEY" != x; then
     keyfileopt="-i $DCACHEADMIN_KEY"
 fi
 
+# DEREK: Fabio took out the version test which allowed to set
+# different connection options, and he put in the following comment
+
 # Since 2.10 and above ; it makes no sense to support older releases
-sshoptions=" -T -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
+
+# DEREK: I disagree and will reintroduce the basic structure. I also should
+# introduce a means for adding user specified options, e.g. NoHostAuthenticationForLocalhost
+# for SSH tunnels
+
+sshoptions=" -T -o NoHostAuthenticationForLocalhost=yes -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
 
 # returns 0 for OK, i.e. the poolname exists, otherwise 1
 check_poolname() {
