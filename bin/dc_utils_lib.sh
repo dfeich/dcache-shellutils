@@ -41,7 +41,7 @@ fi
 # introduce a means for adding user specified options, e.g. NoHostAuthenticationForLocalhost
 # for SSH tunnels
 
-sshoptions=" -T -o NoHostAuthenticationForLocalhost=yes -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
+sshoptions=" -T -o Compression=no -o NoHostAuthenticationForLocalhost=yes -l admin -p $DCACHEADMINPORT $DCACHEADMINHOST"
 
 # returns 0 for OK, i.e. the poolname exists, otherwise 1
 check_poolname() {
