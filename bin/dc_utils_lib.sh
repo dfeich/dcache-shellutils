@@ -138,10 +138,19 @@ execute_cmdfile() {
        fi
        ((tries=$tries+1))
        ssh $sshoptions 2>${tmpfile}.err > $tmpfile <$cmdfile
+       callok=$?
+       if test $callok -ne 0; then
+           echo "SSH ERROR: " $(cat ${tmpfile}.err) >&2
+           echo "SSH COMMAND: ssh $sshoptions "  >&2
+           echo "dCache SCRIPT: " $(cat $cmdfile) >&2
+           # cat ${tmpfile}.err >&2
+           cp $cmdfile /tmp/dc-tools-DEBUG.cmd
+           cp ${tmpfile}.err /tmp/dc-tools-DEBUG.err
+           cp $tmpfile /tmp/dc-tools-DEBUG.out
+       fi
        # remove colours
        sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" -i $tmpfile
        #egrep -q 'admin  *>  *logoff' $tmpfile
-       callok=$?
     done
 
     # clean out the stupid ssh error messages about the connection break off
