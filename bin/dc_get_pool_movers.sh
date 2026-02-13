@@ -10,6 +10,7 @@
 debug=0
 beautify=0
 timestamp=0
+usersubj=0
 
 usage(){
     cat <<EOF
@@ -25,6 +26,7 @@ Options:
                    be sent to stderr to not contaminate stdout.
       -t       :   append a timestamp (tagged with ts=) to each output line
                    only affects raw default output
+      -u       :   Include user subject into output
 
 Description:
       Shows all movers of the respective pools. The listing matches exactly
@@ -42,7 +44,7 @@ EOF
 }
 
 ##############################################################
-TEMP=`getopt -o bdhkq:t --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
+TEMP=`getopt -o bdhkq:tu --long help -n 'dc_replicate_IDlist.sh' -- "$@"`
 if [ $? != 0 ] ; then usage ; echo "Terminating..." >&2 ; exit 1 ; fi
 #echo "TEMP: $TEMP"
 eval set -- "$TEMP"
@@ -73,6 +75,10 @@ while true; do
             timestamp=1
             shift
             ;;
+        -u)
+            usersubj=1
+            shift
+            ;;
         --)
             shift;
             break;
@@ -90,16 +96,21 @@ shift
 
 
 if test x"$queue" != x; then
-   qstr="-queue=$queue"
+    qstr="-queue=$queue"
+fi
+
+flags=""
+if test x"$usersubj" = x1; then
+    flags="-u "
 fi
 
 toremove=""
 if test x"$listfile" = x; then
-   listfile=`mktemp /tmp/dc_generic-$USER.XXXXXXXX`
-   while read line; do
-      echo "$line" >> $listfile
-   done
-   toremove="$toremove $listfile"
+    listfile=`mktemp /tmp/dc_generic-$USER.XXXXXXXX`
+    while read line; do
+        echo "$line" >> $listfile
+    done
+    toremove="$toremove $listfile"
 fi
 if test ! -r $listfile; then
     echo "Error: Cannot read ID list file: $listfile" >&2
@@ -109,6 +120,7 @@ fi
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
 tmpresfile=`mktemp /tmp/dc_utils-gpmr-$USER.XXXXXXXX`
+tmpresfile2=`mktemp /tmp/dc_utils-gpmr-$USER.XXXXXXXX`
 if test $? -ne 0; then
     echo "Error: Could not create a temporary result file" >&2
     exit 1
@@ -117,41 +129,50 @@ fi
 myts=""
 toremove="$toremove $resfile"
 for pool in `cat $listfile`; do
-   cmdfile=`mktemp /tmp/dc_utils-gpm-$USER.XXXXXXXX`
-   if test $? -ne 0; then
-       echo "Error: Could not create a cmdfile" >&2
-       exit 1
-   fi
-   cat >> $cmdfile <<EOF
-\c $pool
-mover ls $qstr
+    cmdfile=`mktemp /tmp/dc_utils-gpm-$USER.XXXXXXXX`
+    if test $? -ne 0; then
+        echo "Error: Could not create a cmdfile" >&2
+        exit 1
+    fi
+    cat >> $cmdfile <<EOF
+\s $pool mover ls ${flags}$qstr
 \q
 EOF
-   if test x"$debug" = x1; then
-      cat $cmdfile >&2
-   fi
-   if test x"$timestamp" = x1; then
-      myts=" ts=$(date +%s)"
-   fi
-   execute_cmdfile -f $cmdfile resfile
-   sed -ne "s/^\([0-9][0-9]*  *.*\)$/$pool \1$myts/p" $resfile  >> $tmpresfile
-   rm -f $cmdfile $resfile
+    if test x"$debug" = x1; then
+        cat $cmdfile >&2
+    fi
+    if test x"$timestamp" = x1; then
+        myts=" ts=$(date +%s)"
+    fi
+    execute_cmdfile -f $cmdfile resfile
+    # if user subject was asked, we need to join every other line to the preceding
+    # one, since the user information is printed on a separate line
+    if test x"$usersubj" = x1; then
+        cat $resfile | awk 'NR % 2 { printf "%s ", $0; next } { print }' > $tmpresfile2
+        mv "$tmpresfile2" "$resfile" 
+    fi
+    # cat $resfile
+    sed -ne "s/^\([0-9][0-9]*  *.*\)$/$pool \1$myts/p" $resfile  >> $tmpresfile
+    rm -f $cmdfile $resfile
 done
 
+
+
 if test x"$beautify" = x1; then
-   sed -e 's/^\([^ ][^ ]*\).* \([0-9A-F][0-9A-F]*\) .*/\2 \1/' $tmpresfile
+    sed -e 's/^\([^ ][^ ]*\).* \([0-9A-F][0-9A-F]*\) .*/\2 \1/' $tmpresfile
 elif test x"$beautify" = x2; then
-   tmpnamefile=`mktemp /tmp/dc_utils-$USER.XXXXXXXX`
-   if test $? -ne 0; then
-       echo "Error: Could not create a temporary result file" >&2
-       rm -f $toremove
-       exit 1
-   fi
-   toremove="$toremove $tmpnamefile"
-   awk '{print $6}' $tmpresfile| dc_get_pnfsname_from_IDlist.sh > $tmpnamefile
-   paste <(awk '{print $1,$2,$3,$4, $5}' $tmpresfile) $tmpnamefile
+    tmpnamefile=`mktemp /tmp/dc_utils-$USER.XXXXXXXX`
+    if test $? -ne 0; then
+        echo "Error: Could not create a temporary result file" >&2
+        rm -f $toremove
+        exit 1
+    fi
+    toremove="$toremove $tmpnamefile"
+    awk '{print $6}' $tmpresfile| dc_get_pnfsname_from_IDlist.sh > $tmpnamefile
+    # paste <(awk '{print $1,$2,$3,$4, $5}' $tmpresfile) $tmpnamefile
+    paste <(awk '{match($0,/cl=\[([.0-9]*)\]/,t); print $1,$2,t[1],$3,$4, $5}' $tmpresfile) $tmpnamefile
 else
-   cat $tmpresfile
+    cat $tmpresfile
 fi
 
 rm -f $toremove
