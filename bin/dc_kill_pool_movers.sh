@@ -92,7 +92,7 @@ while read pool moverid crap; do
    fi
    cat >> $cmdfile <<EOF
 \c $pool
-mover kill $moverid -force
+mover kill $moverid
 EOF
 done < $listfile
 
