@@ -26,7 +26,8 @@ Options:
                    be sent to stderr to not contaminate stdout.
       -t       :   append a timestamp (tagged with ts=) to each output line
                    only affects raw default output
-      -u       :   Include user subject into output
+      -u       :   Include user subject into output. This adds Uid and potentially
+                   the certificate DN
 
 Description:
       Shows all movers of the respective pools. The listing matches exactly
@@ -100,6 +101,10 @@ if test x"$queue" != x; then
 fi
 
 flags=""
+if test x"$beautify" = x2; then
+    # beautify level 2 implies getting user information
+    usersubj=1
+fi
 if test x"$usersubj" = x1; then
     flags="-u "
 fi
@@ -149,31 +154,34 @@ EOF
     # one, since the user information is printed on a separate line
     if test x"$usersubj" = x1; then
         cat $resfile | awk 'NR % 2 { printf "%s ", $0; next } { print }' > $tmpresfile2
-        mv "$tmpresfile2" "$resfile" 
+            mv "$tmpresfile2" "$resfile" 
+        fi
+        # cat $resfile
+        sed -ne "s/^\([0-9][0-9]*  *.*\)$/$pool \1$myts/p" $resfile  >> $tmpresfile
+        rm -f $cmdfile $resfile
+    done
+
+
+
+    if test x"$beautify" = x1; then
+        sed -e 's/^\([^ ][^ ]*\).* \([0-9A-F][0-9A-F]*\) .*/\2 \1/' $tmpresfile
+    elif test x"$beautify" = x2; then
+        tmpnamefile=`mktemp /tmp/dc_utils-$USER.XXXXXXXX`
+        if test $? -ne 0; then
+            echo "Error: Could not create a temporary result file" >&2
+            rm -f $toremove
+            exit 1
+        fi
+        toremove="$toremove $tmpnamefile"
+        awk '{print $6}' $tmpresfile| dc_get_pnfsname_from_IDlist.sh > $tmpnamefile
+        # paste <(awk '{print $1,$2,$3,$4, $5}' $tmpresfile) $tmpnamefile
+        paste <(awk '{match($0,/cl=\[([.0-9]*)\]/,t);
+                  match($0,/(bytes=[0-9]*.*LM=[.0-9]*)/,b);
+                  match($0,/UidPrincipal\[([0-9]*)\]/,uid);
+                  printf "%s %s %s %s uid=%s %s\n",$1,$2,t[1],b[1],uid[1],$4}' $tmpresfile) $tmpnamefile
+    else
+        cat $tmpresfile
     fi
-    # cat $resfile
-    sed -ne "s/^\([0-9][0-9]*  *.*\)$/$pool \1$myts/p" $resfile  >> $tmpresfile
-    rm -f $cmdfile $resfile
-done
 
-
-
-if test x"$beautify" = x1; then
-    sed -e 's/^\([^ ][^ ]*\).* \([0-9A-F][0-9A-F]*\) .*/\2 \1/' $tmpresfile
-elif test x"$beautify" = x2; then
-    tmpnamefile=`mktemp /tmp/dc_utils-$USER.XXXXXXXX`
-    if test $? -ne 0; then
-        echo "Error: Could not create a temporary result file" >&2
-        rm -f $toremove
-        exit 1
-    fi
-    toremove="$toremove $tmpnamefile"
-    awk '{print $6}' $tmpresfile| dc_get_pnfsname_from_IDlist.sh > $tmpnamefile
-    # paste <(awk '{print $1,$2,$3,$4, $5}' $tmpresfile) $tmpnamefile
-    paste <(awk '{match($0,/cl=\[([.0-9]*)\]/,t); print $1,$2,t[1],$3,$4, $5}' $tmpresfile) $tmpnamefile
-else
-    cat $tmpresfile
-fi
-
-rm -f $toremove
+    rm -f $toremove
 
