@@ -15,21 +15,19 @@ mode="route"
 usage() {
 cat <<EOF
 Synopsis:
-          $myname "cert-DN" "VOMS_FQAN1,... ,VOMS_FQANX"
+          $myname "cert-DN" ["VOMS_FQAN1,... ,VOMS_FQANX"]
 
 Options:
          -h/--help   : this help text
 
 Description:
-          Outputs the gPlazma mapping of the cert/voms info to a local
-          dcache user
+          Outputs the gPlazma explanation and mapping of the cert/voms
+          info to the internal dCache user and the final system user.
+          Based on admin shells "explain login" command.
 
 Example:
-   dc_get_usermapping.sh someDN   "/ops,/ops/NGI,/ops/NGI/Germany"
-
-      someDN/ops mapped as: opsuser 800 [800] /
-      someDN/ops/NGI mapped as: null
-      someDN/ops/NGI/Germany mapped as: opsuser 800 [800] /
+   dc_get_usermapping.sh someDN  "/cms"
+   dc_get_usermapping.sh someDN 
 
 EOF
 }
@@ -59,14 +57,16 @@ while true; do
     esac
 done
 
-if test x"$1" == x -o x"$2" == x; then
-   echo "Error: need two arguments" >&2
-   usage
-   exit 1
+if test x"$1" == x ; then
+    echo "Error: need at least one argument" >&2
+    usage
+    exit 1
 fi
 certdn=$1
 vomsfqan=$2
 
+arg_str=" dn:\"${certdn}\""
+[ -n "$vomsfqan" ] && arg_str="${arg_str} fqan:\"${vomsfqan}\""
 
 source $DCACHE_SHELLUTILS/dc_utils_lib.sh
 
@@ -79,18 +79,16 @@ if test $? -ne 0; then
     exit 1
 fi
 
-# [t3dcachedb03] (gPlazma@t3dcachedb03-Domain-gPlazma) admin > test login dn:"/DC=EU/DC=EGI/C=CH/O=People/O=Paul-Scherrer-Institut (PSI)/CN=Fabio Martinelli" fqan:"/cms/"
-# Login[martinelli_f,2980:[500],[HomeDirectory[/], RootDirectory[/]]]
-
 cat > $cmdfile <<EOF
 \c gPlazma
-test login dn:"${certdn}" fqan:"${vomsfqan}"
+explain login $arg_str
 \q
 EOF
 
 execute_cmdfile -f $cmdfile retfile
 toremove="$toremove $retfile"
 
-egrep -i login $retfile
+# egrep -i login $retfile
+cat $retfile
 
 rm -f $toremove
